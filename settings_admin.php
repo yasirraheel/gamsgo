@@ -39,17 +39,70 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
       <?php include 'admin_layout_component.php'; ?>
 
       const SettingsView = () => {
+        const [settings, setSettings] = useState({});
+        const [loading, setLoading] = useState(true);
+
+        useEffect(() => {
+          loadSettings();
+        }, []);
+
+        const loadSettings = async () => {
+          try {
+            const res = await fetch('settings.php?action=get');
+            const data = await res.json();
+            if (!data.error) {
+              setSettings(data);
+            }
+          } catch (err) {
+            console.error('Failed to load settings', err);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const data = {};
+          formData.forEach((value, key) => {
+            data[key] = value;
+          });
+          
+          try {
+            const res = await fetch('settings.php?action=update', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.success) {
+              alert('Settings saved successfully');
+              loadSettings();
+            } else {
+              alert(result.error || 'Failed to save settings');
+            }
+          } catch (err) {
+            alert('Failed to save settings');
+          }
+        };
+
+        if (loading) {
+          return (
+            <div className="flex items-center justify-center h-full">
+              <i className="fas fa-spinner fa-spin text-4xl text-primary"></i>
+            </div>
+          );
+        }
+
         return (
           <div className="p-6">
-            <div id="toast-container" className="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
-            
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-white mb-2">Site Settings</h1>
               <p className="text-gray-400">Configure your marketplace settings and integrations</p>
             </div>
 
-            <form id="settings-form" className="space-y-6">
-            <!-- General Settings -->
+            <form onSubmit={handleSubmit} className="space-y-6">
+            {/* General Settings */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-globe text-primary"></i> General Information
@@ -57,11 +110,11 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Site Name</label>
-                        <input type="text" name="site_name" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="DigiMarket">
+                        <input type="text" name="site_name" defaultValue={settings.site_name || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="DigiMarket" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Support Email</label>
-                        <input type="email" name="support_email" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="support@example.com">
+                        <input type="email" name="support_email" defaultValue={settings.support_email || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="support@example.com" />
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-xs font-medium text-gray-400 mb-1">Site Description</label>
@@ -70,7 +123,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 </div>
             </div>
 
-            <!-- Contact Settings -->
+            {/* Contact Settings */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-phone text-primary"></i> Contact Information
@@ -78,16 +131,16 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Mobile Number</label>
-                        <input type="text" name="mobile_number" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="+1 234 567 8900">
+                        <input type="text" name="mobile_number" defaultValue={settings.mobile_number || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="+1 234 567 8900" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">WhatsApp Number</label>
-                        <input type="text" name="whatsapp_number" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="+1 234 567 8900">
+                        <input type="text" name="whatsapp_number" defaultValue={settings.whatsapp_number || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="+1 234 567 8900" />
                     </div>
                 </div>
             </div>
 
-            <!-- Payment Settings -->
+            {/* Payment Settings */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-brands fa-paypal text-primary"></i> Payment Integration
@@ -95,16 +148,16 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">PayPal ID / Email</label>
-                        <input type="text" name="paypal_id" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="your@paypal.com">
+                        <input type="text" name="paypal_id" defaultValue={settings.paypal_id || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="your@paypal.com" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Currency Symbol</label>
-                        <input type="text" name="currency_symbol" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="$">
+                        <input type="text" name="currency_symbol" defaultValue={settings.currency_symbol || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="$" />
                     </div>
                 </div>
             </div>
 
-            <!-- Social Media -->
+            {/* Social Media */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-share-nodes text-primary"></i> Social Media Links
@@ -112,28 +165,28 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-facebook mr-2"></i>Facebook URL</label>
-                        <input type="url" name="facebook_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://facebook.com/yourpage">
+                        <input type="url" name="facebook_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://facebook.com/yourpage" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-twitter mr-2"></i>Twitter URL</label>
-                        <input type="url" name="twitter_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://twitter.com/yourhandle">
+                        <input type="url" name="twitter_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://twitter.com/yourhandle" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-instagram mr-2"></i>Instagram URL</label>
-                        <input type="url" name="instagram_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://instagram.com/yourprofile">
+                        <input type="url" name="instagram_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://instagram.com/yourprofile" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-linkedin mr-2"></i>LinkedIn URL</label>
-                        <input type="url" name="linkedin_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://linkedin.com/company/yourcompany">
+                        <input type="url" name="linkedin_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://linkedin.com/company/yourcompany" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-youtube mr-2"></i>YouTube URL</label>
-                        <input type="url" name="youtube_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://youtube.com/@yourchannel">
+                        <input type="url" name="youtube_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://youtube.com/@yourchannel" />
                     </div>
                 </div>
             </div>
 
-            <!-- SEO Settings -->
+            {/* SEO Settings */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-search text-primary"></i> SEO & Meta Tags
@@ -141,7 +194,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Meta Title</label>
-                        <input type="text" name="meta_title" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="DigiMarket - Premium Digital Assets">
+                        <input type="text" name="meta_title" defaultValue={settings.meta_title || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="DigiMarket - Premium Digital Assets" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Meta Description</label>
@@ -149,16 +202,16 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Meta Keywords</label>
-                        <input type="text" name="meta_keywords" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="digital assets, marketplace, subscriptions">
+                        <input type="text" name="meta_keywords" defaultValue={settings.meta_keywords || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="digital assets, marketplace, subscriptions" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">OG Image URL (Social Share)</label>
-                        <input type="url" name="og_image_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/og-image.jpg">
+                        <input type="url" name="og_image_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/og-image.jpg" />
                     </div>
                 </div>
             </div>
 
-            <!-- Branding -->
+            {/* Branding */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-palette text-primary"></i> Branding
@@ -166,16 +219,16 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Logo URL</label>
-                        <input type="url" name="logo_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/logo.png">
+                        <input type="url" name="logo_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/logo.png" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Favicon URL</label>
-                        <input type="url" name="favicon_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/favicon.ico">
+                        <input type="url" name="favicon_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/favicon.ico" />
                     </div>
                 </div>
             </div>
 
-            <!-- Analytics -->
+            {/* Analytics */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-chart-line text-primary"></i> Analytics & Tracking
@@ -183,16 +236,16 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Google Analytics ID</label>
-                        <input type="text" name="google_analytics_id" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="G-XXXXXXXXXX">
+                        <input type="text" name="google_analytics_id" defaultValue={settings.google_analytics_id || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="G-XXXXXXXXXX" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Facebook Pixel ID</label>
-                        <input type="text" name="facebook_pixel_id" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="123456789012345">
+                        <input type="text" name="facebook_pixel_id" defaultValue={settings.facebook_pixel_id || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="123456789012345" />
                     </div>
                 </div>
             </div>
 
-            <!-- Legal Pages -->
+            {/* Legal Pages */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-file-contract text-primary"></i> Legal Pages
@@ -200,20 +253,20 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Terms & Conditions URL</label>
-                        <input type="url" name="terms_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/terms">
+                        <input type="url" name="terms_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/terms" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Privacy Policy URL</label>
-                        <input type="url" name="privacy_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/privacy">
+                        <input type="url" name="privacy_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/privacy" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Refund Policy URL</label>
-                        <input type="url" name="refund_policy_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/refunds">
+                        <input type="url" name="refund_policy_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/refunds" />
                     </div>
                 </div>
             </div>
 
-            <!-- System Settings -->
+            {/* System Settings */}
             <div className="glass-panel rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-server text-primary"></i> System Settings
@@ -221,16 +274,16 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Timezone</label>
-                        <input type="text" name="timezone" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="UTC">
+                        <input type="text" name="timezone" defaultValue={settings.timezone || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="UTC" />
                     </div>
-                    <div className="flex items-center gap-3 pt-6">
-                        <input type="checkbox" name="maintenance_mode" id="maintenance_mode" className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-red-500 focus:ring-red-500">
+                    <div classname="flex items-center gap-3 pt-6" defaultValue={settings.flex items-center gap-3 pt-6 || ""}>
+                        <input type="checkbox" name="maintenance_mode" id="maintenance_mode" className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-red-500 focus:ring-red-500" />
                         <label for="maintenance_mode" className="text-sm text-gray-300 cursor-pointer select-none">Enable Maintenance Mode</label>
                     </div>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
+            {/* Action Buttons */}
             <div className="flex justify-end gap-3">
                 <button type="button" id="reset-btn" className="px-6 py-3 rounded-xl text-gray-400 hover:text-white font-medium transition-colors border border-gray-700 hover:border-gray-600">
                     <i className="fa-solid fa-rotate-left mr-2"></i>Reset to Defaults
@@ -304,95 +357,6 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
       };
 
       ReactDOM.render(<App />, document.getElementById('root'));
-    </script>
-
-    <script>
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const colors = {
-                success: 'bg-green-500/10 border-green-500/20 text-green-400',
-                error: 'bg-red-500/10 border-red-500/20 text-red-400',
-                info: 'bg-blue-500/10 border-blue-500/20 text-blue-400'
-            };
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-triangle-exclamation',
-                info: 'fa-info-circle'
-            };
-            const toast = document.createElement('div');
-            toast.className = `${colors[type]} border p-4 rounded-xl backdrop-blur-md shadow-xl flex items-center gap-3 animate-bounce-in`;
-            toast.innerHTML = `<i className="fa-solid ${icons[type]}"></i><span className="font-medium text-sm">${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        async function loadSettings() {
-            try {
-                const res = await fetch('settings.php?action=get');
-                const data = await res.json();
-                if (data.error) {
-                    showToast(data.error, 'error');
-                    return;
-                }
-                const form = document.getElementById('settings-form');
-                Object.keys(data).forEach(key => {
-                    const input = form.elements[key];
-                    if (input) {
-                        if (input.type === 'checkbox') {
-                            input.checked = Boolean(data[key]);
-                        } else {
-                            input.value = data[key] || '';
-                        }
-                    }
-                });
-            } catch (err) {
-                showToast('Failed to load settings', 'error');
-            }
-        }
-
-        document.getElementById('settings-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-            data.maintenance_mode = document.getElementById('maintenance_mode').checked;
-
-            try {
-                const res = await fetch('settings.php?action=update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await res.json();
-                if (result.success) {
-                    showToast('Settings saved successfully', 'success');
-                } else {
-                    showToast(result.error || 'Failed to save settings', 'error');
-                }
-            } catch (err) {
-                showToast('Failed to save settings', 'error');
-            }
-        });
-
-        document.getElementById('reset-btn').addEventListener('click', async () => {
-            if (!confirm('Are you sure you want to reset all settings to defaults?')) return;
-            try {
-                const res = await fetch('settings.php?action=reset', { method: 'POST' });
-                const result = await res.json();
-                if (result.success) {
-                    showToast('Settings reset to defaults', 'success');
-                    loadSettings();
-                } else {
-                    showToast(result.error || 'Failed to reset settings', 'error');
-                }
-            } catch (err) {
-                showToast('Failed to reset settings', 'error');
-            }
-        });
-
-        loadSettings();
     </script>
 </body>
 </html>
