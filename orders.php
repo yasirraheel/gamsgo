@@ -31,9 +31,9 @@ function ensureSchema($pdo) {
         total_amount DECIMAL(10,2) NOT NULL,
         payment_gateway_id INT NOT NULL,
         payment_gateway_name VARCHAR(100),
-        country VARCHAR(100) NOT NULL,
-        city VARCHAR(100) NOT NULL,
-        postal_code VARCHAR(20) NOT NULL,
+        country VARCHAR(100) NULL,
+        city VARCHAR(100) NULL,
+        postal_code VARCHAR(20) NULL,
         status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
         expiry_date DATE NULL,
         admin_notes TEXT,
@@ -56,9 +56,8 @@ switch ($action) {
         }
         $data = json_decode(file_get_contents('php://input'), true);
         
-        // Validate required fields
-        if (empty($data['products']) || empty($data['total_amount']) || empty($data['payment_gateway_id']) ||
-            empty($data['country']) || empty($data['city']) || empty($data['postal_code'])) {
+        // Validate required fields (shipping address not required for digital products)
+        if (empty($data['products']) || empty($data['total_amount']) || empty($data['payment_gateway_id'])) {
             echo json_encode(['error' => 'Missing required fields']);
             exit;
         }
@@ -77,9 +76,9 @@ switch ($action) {
             $data['total_amount'],
             $data['payment_gateway_id'],
             $gateway['gateway_name'] ?? 'Unknown',
-            $data['country'],
-            $data['city'],
-            $data['postal_code']
+            $data['country'] ?? null,
+            $data['city'] ?? null,
+            $data['postal_code'] ?? null
         ]);
         
         echo json_encode(['success' => true, 'order_id' => $pdo->lastInsertId()]);
