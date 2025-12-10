@@ -43,10 +43,13 @@
 
     const App = () => {
       const [cart, setCart] = useState([]);
-      const [gateways, setGateways] = useState([]);
+      const [paymentGateways, setPaymentGateways] = useState([]);
       const [selectedGateway, setSelectedGateway] = useState(null);
       const [isSubmitting, setIsSubmitting] = useState(false);
       const [toast, setToast] = useState(null);
+      const [country, setCountry] = useState('United States');
+      const [city, setCity] = useState('New York');
+      const [postalCode, setPostalCode] = useState('10001');
       const [settings, setSettings] = useState(null);
 
       useEffect(() => {
@@ -124,7 +127,10 @@
           const orderData = {
             products: cart,
             total_amount: calculateTotal().toFixed(2),
-            payment_gateway_id: selectedGateway.id
+            payment_gateway_id: selectedGateway.id,
+            country: country,
+            city: city,
+            postal_code: postalCode
           };
 
           const res = await fetch('orders.php?action=create', {

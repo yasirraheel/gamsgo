@@ -27,14 +27,29 @@ function db() {
 }
 
 function ensureSchema() {
+    $pdo = db();
     $sql = "CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(190) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
         role ENUM('admin','user') NOT NULL DEFAULT 'user',
+        country VARCHAR(100) NULL,
+        city VARCHAR(100) NULL,
+        postal_code VARCHAR(20) NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-    db()->exec($sql);
+    $pdo->exec($sql);
+    
+    // Add columns if they don't exist (for existing tables)
+    try {
+        $pdo->exec("ALTER TABLE users ADD COLUMN country VARCHAR(100) NULL");
+    } catch (PDOException $e) {}
+    try {
+        $pdo->exec("ALTER TABLE users ADD COLUMN city VARCHAR(100) NULL");
+    } catch (PDOException $e) {}
+    try {
+        $pdo->exec("ALTER TABLE users ADD COLUMN postal_code VARCHAR(20) NULL");
+    } catch (PDOException $e) {}
 }
 
 function jsonBody() {
