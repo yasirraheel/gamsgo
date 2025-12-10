@@ -519,6 +519,7 @@ $faviconUrl = $settings['favicon_url'] ?? '';
         const [filter, setFilter] = useState('All');
         const [isModalOpen, setIsModalOpen] = useState(false);
         const [isCartOpen, setIsCartOpen] = useState(false);
+        const [isMenuOpen, setIsMenuOpen] = useState(false);
         const [searchTerm, setSearchTerm] = useState('');
         const [editingProduct, setEditingProduct] = useState(null);
         const [toasts, setToasts] = useState([]);
@@ -741,44 +742,102 @@ $faviconUrl = $settings['favicon_url'] ?? '';
                 <div className="flex items-center gap-2">
                   <div className={`w-8 h-8 rounded bg-gradient-to-tr ${isAdmin ? 'from-red-500 to-orange-500' : 'from-primary to-secondary'} flex items-center justify-center text-white font-bold transition-all duration-500`}>{isAdmin ? <i className="fa-solid fa-lock-open text-xs"></i> : 'D'}</div>
                   <span className="font-bold text-xl tracking-tight text-white">{settings?.site_name || 'DigiMarket'}</span>
-                  {storeId ? (
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] uppercase font-bold tracking-wider"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>Live Global</span>
-                  ) : (
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/20 text-gray-400 text-[10px] uppercase font-bold tracking-wider"><span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>Local Mode</span>
-                  )}
-                  {isSyncing && <i className="fa-solid fa-arrows-rotate fa-spin text-gray-400 text-xs ml-2"></i>}
                 </div>
-                <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-400">
-                  <a href="#" className="text-white">Marketplace</a>
-                  <a href="#" className="hover:text-white transition-colors">How it works</a>
-                  <a href="#" className="hover:text-white transition-colors">Support</a>
-                </div>
-                <div className="flex items-center gap-3">
-                  {currentUser ? (
-                    <>
-                      <button onClick={() => window.location.href = 'user_orders.php'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="My Orders"><i className="fa-solid fa-receipt"></i><span className="hidden sm:inline">My Orders</span></button>
-                      <div className="hidden md:flex flex-col text-right text-xs leading-tight text-gray-400">
-                        <span className="text-white font-semibold">{currentUser.email}</span>
-                        <span className={isAdmin ? 'text-red-400 font-semibold' : 'text-gray-500'}>{isAdmin ? 'Admin' : 'User'}</span>
-                      </div>
-                      <button onClick={handleLogout} className="px-3 py-2 rounded-lg text-sm bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700 transition-colors">Logout</button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} className="px-3 py-2 rounded-lg text-sm bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700 transition-colors">Login</button>
-                      <button onClick={() => { setAuthMode('signup'); setIsAuthModalOpen(true); }} className="px-3 py-2 rounded-lg text-sm bg-primary text-white hover:bg-primaryDark transition-colors">Sign up</button>
-                    </>
+                <button 
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="p-2 text-gray-400 hover:text-white transition-colors"
+                  aria-label="Toggle menu"
+                >
+                  <i className="fa-solid fa-bars text-xl"></i>
+                </button>
+              </div>
+            </nav>
+
+            {/* Sidebar Menu */}
+            <div 
+              className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              onClick={() => setIsMenuOpen(false)}
+            ></div>
+            <div className={`fixed top-0 right-0 h-full w-80 bg-[#0f172a] border-l border-gray-800 z-50 transform transition-transform duration-300 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
+              <div className="p-4 border-b border-gray-800 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Menu</h2>
+                <button onClick={() => setIsMenuOpen(false)} className="text-gray-400 hover:text-white">
+                  <i className="fa-solid fa-times text-xl"></i>
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-4">
+                {currentUser ? (
+                  <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                    <div className="text-sm text-gray-400">Logged in as</div>
+                    <div className="text-white font-semibold">{currentUser.email}</div>
+                    <div className={`text-xs mt-1 ${isAdmin ? 'text-red-400' : 'text-gray-500'}`}>{isAdmin ? 'Admin' : 'User'}</div>
+                  </div>
+                ) : null}
+
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => setIsCartOpen(true)} 
+                    className="w-full flex items-center justify-between p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-left"
+                  >
+                    <span className="flex items-center gap-3">
+                      <i className="fa-solid fa-cart-shopping text-primary"></i>
+                      <span className="text-white">Shopping Cart</span>
+                    </span>
+                    {cart.length > 0 && (
+                      <span className="bg-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">{cart.length}</span>
+                    )}
+                  </button>
+
+                  {currentUser && (
+                    <button 
+                      onClick={() => window.location.href = 'user_orders.php'} 
+                      className="w-full flex items-center gap-3 p-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-left"
+                    >
+                      <i className="fa-solid fa-receipt text-primary"></i>
+                      <span className="text-white">My Orders</span>
+                    </button>
                   )}
-                  <button onClick={() => setIsCartOpen(true)} className="relative p-2 text-gray-400 hover:text-white transition-colors mr-2"><i className="fa-solid fa-cart-shopping"></i>{cart.length > 0 && (<span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-lg border border-[#0f172a]">{cart.length}</span>)}</button>
+
                   {isAdmin && (
-                    <button onClick={() => window.location.href = 'admin.php'} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all border border-red-500/20 flex items-center gap-2 shadow-lg shadow-red-500/30">
+                    <button 
+                      onClick={() => window.location.href = 'admin.php'} 
+                      className="w-full flex items-center gap-3 p-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-lg transition-colors text-left"
+                    >
                       <i className="fa-solid fa-shield-halved"></i>
-                      <span className="hidden sm:inline">Admin Panel</span>
+                      <span className="text-white">Admin Panel</span>
                     </button>
                   )}
                 </div>
               </div>
-            </nav>
+
+              <div className="p-4 border-t border-gray-800">
+                {currentUser ? (
+                  <button 
+                    onClick={handleLogout} 
+                    className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <button 
+                      onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); setIsMenuOpen(false); }} 
+                      className="w-full px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                    >
+                      Login
+                    </button>
+                    <button 
+                      onClick={() => { setAuthMode('signup'); setIsAuthModalOpen(true); setIsMenuOpen(false); }} 
+                      className="w-full px-4 py-3 bg-primary hover:bg-primaryDark text-white rounded-lg transition-colors"
+                    >
+                      Sign up
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {isAdmin && (
               <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
