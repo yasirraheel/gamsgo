@@ -278,7 +278,7 @@
                   <button
                     type="submit"
                     disabled={isSubmitting || paymentGateways.length === 0}
-                    className="w-full bg-primary hover:bg-blue-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-medium transition-colors text-lg">
+                    className="w-full bg-primary hover:bg-blue-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-medium transition-colors text-lg"
                   >
                     {isSubmitting ? (
                       <>
