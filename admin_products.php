@@ -536,10 +536,9 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
 
       const handleToggleVisible = async (id) => {
         try {
-          const res = await fetch('products.php?action=toggle_visible', {
+          const res = await fetch(`products.php?action=toggle_visible&id=${id}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id })
+            headers: { 'Content-Type': 'application/json' }
           });
           const data = await res.json();
           if (data.success) {
