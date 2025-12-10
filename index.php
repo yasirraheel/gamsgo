@@ -101,6 +101,54 @@
             </span>
           );
         }
+
+      const AuthModal = ({ isOpen, mode, onClose, onSubmit, setMode, email, setEmail, password, setPassword, role, setRole, loading, error }) => {
+          if (!isOpen) return null;
+          const isSignup = mode === 'signup';
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
+              <div className="glass-panel w-full max-w-md rounded-2xl relative z-10 overflow-hidden border border-gray-700 shadow-2xl">
+                <div className="p-6 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <i className={`fa-solid ${isSignup ? 'fa-user-plus' : 'fa-right-to-bracket'} text-primary`}></i>
+                    {isSignup ? 'Create account' : 'Login'}
+                  </h2>
+                  <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors"><i className="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Email</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="you@example.com" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Password</label>
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="At least 6 characters" required />
+                  </div>
+                  {isSignup && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">Role</label>
+                      <select value={role} onChange={e => setRole(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary">
+                        <option value="user">User</option>
+                        <option value="admin">Admin (first admin only)</option>
+                      </select>
+                      <p className="text-[11px] text-gray-500 mt-1">Admin role is granted only if no admin exists yet.</p>
+                    </div>
+                  )}
+                  {error && <div className="text-red-400 text-sm">{error}</div>}
+                  <div className="flex items-center justify-between pt-2">
+                    <button onClick={() => setMode(isSignup ? 'login' : 'signup')} className="text-sm text-primary hover:text-primaryDark">
+                      {isSignup ? 'Already have an account? Login' : 'Need an account? Sign up'}
+                    </button>
+                    <button onClick={onSubmit} disabled={loading} className="bg-gradient-to-r from-primary to-secondary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-primary/20 disabled:opacity-60">
+                      {loading ? 'Please wait...' : isSignup ? 'Sign up' : 'Login'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+      };
         return (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[type]}`}>
             {type === 'Private' ? <i className="fa-solid fa-lock mr-1.5 text-[10px]"></i> : type === 'Shared' ? <i className="fa-solid fa-users mr-1.5 text-[10px]"></i> : type === 'Hidden' ? <i className="fa-solid fa-eye-slash mr-1.5 text-[10px]"></i> : null}
@@ -324,7 +372,7 @@
         const [products, setProducts] = useState(DEFAULT_PRODUCTS);
         const [storeId, setStoreId] = useState(null);
         const [cart, setCart] = useState([]);
-        const [isAdmin, setIsAdmin] = useState(false);
+        const [currentUser, setCurrentUser] = useState(null);
         const [isLoading, setIsLoading] = useState(false);
         const [isSyncing, setIsSyncing] = useState(false);
         const [filter, setFilter] = useState('All');
@@ -333,12 +381,31 @@
         const [searchTerm, setSearchTerm] = useState('');
         const [editingProduct, setEditingProduct] = useState(null);
         const [toasts, setToasts] = useState([]);
+        const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+        const [authMode, setAuthMode] = useState('login');
+        const [authEmail, setAuthEmail] = useState('');
+        const [authPassword, setAuthPassword] = useState('');
+        const [authRole, setAuthRole] = useState('user');
+        const [authError, setAuthError] = useState('');
+        const [authLoading, setAuthLoading] = useState(false);
+
+        const isAdmin = currentUser?.role === 'admin';
+
+        const fetchCurrentUser = useCallback(async () => {
+          try {
+            const res = await fetch('auth.php?action=me');
+            const data = await res.json();
+            if (data && data.email) {
+              setCurrentUser({ email: data.email, role: data.role });
+            }
+          } catch (err) {
+            console.warn('Auth check failed', err);
+          }
+        }, []);
 
         useEffect(() => {
           const urlParams = new URLSearchParams(window.location.search);
           const id = urlParams.get('storeId');
-          const localAdmin = window.localStorage.getItem('digimarket_is_admin') === 'true';
-          setIsAdmin(localAdmin);
           const localCart = window.localStorage.getItem('digimarket_cart');
           if (localCart) setCart(JSON.parse(localCart));
           if (id) { setStoreId(id); loadStore(id); }
@@ -346,7 +413,8 @@
             const localProducts = window.localStorage.getItem('digimarket_products');
             if (localProducts) setProducts(JSON.parse(localProducts));
           }
-        }, []);
+          fetchCurrentUser();
+        }, [fetchCurrentUser]);
 
         useEffect(() => {
           if (!storeId) return;
@@ -356,7 +424,6 @@
 
         useEffect(() => { window.localStorage.setItem('digimarket_cart', JSON.stringify(cart)); }, [cart]);
         useEffect(() => { if (!storeId) { window.localStorage.setItem('digimarket_products', JSON.stringify(products)); } }, [products, storeId]);
-        useEffect(() => { window.localStorage.setItem('digimarket_is_admin', String(isAdmin)); }, [isAdmin]);
 
         const addToast = (message, type) => { const id = Date.now(); setToasts(prev => [...prev, { id, message, type }]); };
         const removeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id));
@@ -385,6 +452,39 @@
             addToast('Global Store Created! You are now live.', 'success');
           } catch (err) { addToast('Failed to go live', 'error'); }
           finally { setIsLoading(false); }
+        };
+
+        const handleAuthSubmit = async () => {
+          setAuthLoading(true);
+          setAuthError('');
+          try {
+            const endpoint = authMode === 'signup' ? 'signup' : 'login';
+            const res = await fetch(`auth.php?action=${endpoint}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: authEmail, password: authPassword, role: authRole })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Authentication failed');
+            setCurrentUser({ email: data.email, role: data.role });
+            addToast(authMode === 'signup' ? 'Account created' : 'Logged in', 'success');
+            setIsAuthModalOpen(false);
+            setAuthPassword('');
+          } catch (err) {
+            setAuthError(err.message || 'Authentication failed');
+          } finally {
+            setAuthLoading(false);
+          }
+        };
+
+        const handleLogout = async () => {
+          try {
+            await fetch('auth.php?action=logout', { method: 'POST' });
+          } catch (err) {
+            console.warn('Logout failed', err);
+          }
+          setCurrentUser(null);
+          addToast('Logged out', 'info');
         };
 
         const handleAddProduct = (newProduct) => { const updated = [newProduct, ...products]; setProducts(updated); if (storeId) syncToCloud(updated); };
@@ -430,7 +530,20 @@
                   <a href="#" className="hover:text-white transition-colors">Support</a>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setIsAdmin(!isAdmin)} className={`p-2 rounded-lg transition-colors ${isAdmin ? 'text-red-400 hover:bg-red-500/10' : 'text-gray-400 hover:text-white'}`} title="Toggle Admin Mode"><i className="fa-solid fa-user-shield"></i></button>
+                  {currentUser ? (
+                    <>
+                      <div className="hidden md:flex flex-col text-right text-xs leading-tight text-gray-400">
+                        <span className="text-white font-semibold">{currentUser.email}</span>
+                        <span className={isAdmin ? 'text-red-400 font-semibold' : 'text-gray-500'}>{isAdmin ? 'Admin' : 'User'}</span>
+                      </div>
+                      <button onClick={handleLogout} className="px-3 py-2 rounded-lg text-sm bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700 transition-colors">Logout</button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} className="px-3 py-2 rounded-lg text-sm bg-gray-800 border border-gray-700 text-gray-200 hover:bg-gray-700 transition-colors">Login</button>
+                      <button onClick={() => { setAuthMode('signup'); setIsAuthModalOpen(true); }} className="px-3 py-2 rounded-lg text-sm bg-primary text-white hover:bg-primaryDark transition-colors">Sign up</button>
+                    </>
+                  )}
                   <button onClick={() => setIsCartOpen(true)} className="relative p-2 text-gray-400 hover:text-white transition-colors mr-2"><i className="fa-solid fa-cart-shopping"></i>{cart.length > 0 && (<span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-lg border border-[#0f172a]">{cart.length}</span>)}</button>
                   {isAdmin && (<button onClick={openAddModal} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-red-500/10 flex items-center gap-2 shadow-lg shadow-red-500/20"><i className="fa-solid fa-plus"></i><span className="hidden sm:inline">Add Item</span></button>)}
                 </div>
@@ -507,11 +620,12 @@
             </main>
 
             <footer className="mt-20 border-t border-gray-800 py-10 text-center">
-              <p className="text-gray-500 text-sm">© 2024 DigiMarket. All rights reserved. <span className="mx-2">|</span><span onClick={() => setIsAdmin(!isAdmin)} className="cursor-pointer hover:text-gray-300">Admin Login</span></p>
+              <p className="text-gray-500 text-sm">© 2024 DigiMarket. All rights reserved. <span className="mx-2">|</span><span onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} className="cursor-pointer hover:text-gray-300">Login</span></p>
             </footer>
 
             <ProductModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={editingProduct ? handleUpdateProduct : handleAddProduct} productToEdit={editingProduct} />
             <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} onRemove={removeFromCart} />
+            <AuthModal isOpen={isAuthModalOpen} mode={authMode} onClose={() => setIsAuthModalOpen(false)} onSubmit={handleAuthSubmit} setMode={setAuthMode} email={authEmail} setEmail={setAuthEmail} password={authPassword} setPassword={setAuthPassword} role={authRole} setRole={setAuthRole} loading={authLoading} error={authError} />
           </div>
         );
       };
