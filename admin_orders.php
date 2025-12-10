@@ -54,6 +54,24 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
       const [expiryDate, setExpiryDate] = useState('');
       const [adminNotes, setAdminNotes] = useState('');
 
+      // Calculate auto expiry based on product validity
+      const getAutoExpiryInfo = () => {
+        let maxValidity = 1;
+        order.products.forEach(item => {
+          const validity = item.validity_months || item.validityMonths || 1;
+          maxValidity = Math.max(maxValidity, validity);
+        });
+        const autoDate = new Date();
+        autoDate.setMonth(autoDate.getMonth() + maxValidity);
+        return {
+          months: maxValidity,
+          date: autoDate.toISOString().split('T')[0],
+          formatted: autoDate.toLocaleDateString()
+        };
+      };
+
+      const autoExpiry = getAutoExpiryInfo();
+
       const handleSubmit = (e) => {
         e.preventDefault();
         onApprove(order.id, expiryDate, adminNotes);
@@ -70,11 +88,21 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 mb-4">
+                <div className="flex items-start gap-2 text-sm">
+                  <i className="fas fa-info-circle text-blue-400 mt-0.5"></i>
+                  <div className="text-blue-300">
+                    <div className="font-medium">Auto-calculated expiry date:</div>
+                    <div className="text-blue-400 mt-1">{autoExpiry.formatted} ({autoExpiry.months} {autoExpiry.months === 1 ? 'month' : 'months'})</div>
+                    <div className="text-xs text-blue-400/70 mt-1">Leave blank to use auto-calculated date</div>
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-sm font-medium mb-2">Expiry Date *</label>
+                <label className="block text-sm font-medium mb-2">Custom Expiry Date (Optional)</label>
                 <input
                   type="date"
-                  required
                   value={expiryDate}
                   onChange={(e) => setExpiryDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}

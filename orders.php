@@ -176,10 +176,31 @@ switch ($action) {
             exit;
         }
         
+        // Calculate expiry date based on product validity
+        $maxValidityMonths = 1; // Default to 1 month
+        $products = json_decode($order['products'], true);
+        
+        // Get the maximum validity from all products in the order
+        foreach ($products as $item) {
+            $productId = $item['id'] ?? null;
+            if ($productId) {
+                $stmt = $pdo->prepare("SELECT validity_months FROM products WHERE id = ?");
+                $stmt->execute([$productId]);
+                $product = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($product && isset($product['validity_months'])) {
+                    $maxValidityMonths = max($maxValidityMonths, (int)$product['validity_months']);
+                }
+            }
+        }
+        
+        // Calculate expiry date (current date + validity months)
+        $calculated_expiry = date('Y-m-d', strtotime("+{$maxValidityMonths} months"));
+        
+        // Use provided expiry_date if given, otherwise use calculated
+        $final_expiry = $expiry_date ?: $calculated_expiry;
+        
         // Only decrease stock if order was not previously approved
         if ($order['status'] !== 'approved') {
-            $products = json_decode($order['products'], true);
-            
             // Decrease stock for each product
             foreach ($products as $item) {
                 $productId = $item['id'] ?? null;
@@ -194,7 +215,7 @@ switch ($action) {
         
         // Update order status
         $stmt = $pdo->prepare("UPDATE orders SET status = 'approved', expiry_date = ?, admin_notes = ? WHERE id = ?");
-        $stmt->execute([$expiry_date, $admin_notes, $id]);
+        $stmt->execute([$final_expiry, $admin_notes, $id]);
         
         echo json_encode(['success' => true]);
         break;
