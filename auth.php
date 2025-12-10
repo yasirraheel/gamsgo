@@ -82,10 +82,8 @@ if (strlen($password) < 6) {
 
 if ($action === 'signup') {
     $pdo = db();
-    // Determine role: default user. Allow admin only if none exists yet.
-    $requestedRole = ($data['role'] ?? 'user') === 'admin' ? 'admin' : 'user';
-    $hasAdmin = $pdo->query("SELECT COUNT(*) AS c FROM users WHERE role='admin'")->fetch()['c'] > 0;
-    $role = ($requestedRole === 'admin' && !$hasAdmin) ? 'admin' : 'user';
+    // All new signups are regular users
+    $role = 'user';
 
     $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
     $stmt->execute([$email]);

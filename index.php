@@ -206,16 +206,6 @@ $faviconUrl = $settings['favicon_url'] ?? '';
                     <label className="block text-xs font-medium text-gray-400 mb-1">Password</label>
                     <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="At least 6 characters" required />
                   </div>
-                  {isSignup && (
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Role</label>
-                      <select value={role} onChange={e => setRole(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary">
-                        <option value="user">User</option>
-                        <option value="admin">Admin (first admin only)</option>
-                      </select>
-                      <p className="text-[11px] text-gray-500 mt-1">Admin role is granted only if no admin exists yet.</p>
-                    </div>
-                  )}
                   {error && <div className="text-red-400 text-sm">{error}</div>}
                   <div className="flex items-center justify-between pt-2">
                     <button onClick={() => setMode(isSignup ? 'login' : 'signup')} className="text-sm text-primary hover:text-primaryDark">
