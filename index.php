@@ -471,9 +471,6 @@
             const data = await res.json();
             if (data && data.email) {
               setCurrentUser({ email: data.email, role: data.role });
-              if (data.role === 'admin' && !window.location.search.includes('stay')) {
-                window.location.href = 'admin.php';
-              }
             }
           } catch (err) {
             console.warn('Auth check failed', err);
