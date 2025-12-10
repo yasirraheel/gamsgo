@@ -688,7 +688,7 @@
                 <div className="flex items-center gap-3">
                   {currentUser ? (
                     <>
-                      <button onClick={() => window.location.href = 'user_orders.html'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="My Orders"><i className="fa-solid fa-receipt"></i><span className="hidden sm:inline">My Orders</span></button>
+                      <button onClick={() => window.location.href = 'user_orders.php'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="My Orders"><i className="fa-solid fa-receipt"></i><span className="hidden sm:inline">My Orders</span></button>
                       <div className="hidden md:flex flex-col text-right text-xs leading-tight text-gray-400">
                         <span className="text-white font-semibold">{currentUser.email}</span>
                         <span className={isAdmin ? 'text-red-400 font-semibold' : 'text-gray-500'}>{isAdmin ? 'Admin' : 'User'}</span>
@@ -704,9 +704,9 @@
                   <button onClick={() => setIsCartOpen(true)} className="relative p-2 text-gray-400 hover:text-white transition-colors mr-2"><i className="fa-solid fa-cart-shopping"></i>{cart.length > 0 && (<span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-lg border border-[#0f172a]">{cart.length}</span>)}</button>
                   {isAdmin && (
                     <>
-                      <button onClick={() => window.location.href = 'admin_orders.html'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Orders Management"><i className="fa-solid fa-list-check"></i><span className="hidden sm:inline">Orders</span></button>
-                      <button onClick={() => window.location.href = 'payment_gateways.html'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Payment Gateways"><i className="fa-solid fa-credit-card"></i><span className="hidden sm:inline">Gateways</span></button>
-                      <button onClick={() => window.location.href = 'settings.html'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Settings"><i className="fa-solid fa-cog"></i><span className="hidden sm:inline">Settings</span></button>
+                      <button onClick={() => window.location.href = 'admin_orders.php'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Orders Management"><i className="fa-solid fa-list-check"></i><span className="hidden sm:inline">Orders</span></button>
+                      <button onClick={() => window.location.href = 'payment_gateways_admin.php'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Payment Gateways"><i className="fa-solid fa-credit-card"></i><span className="hidden sm:inline">Gateways</span></button>
+                      <button onClick={() => window.location.href = 'settings_admin.php'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Settings"><i className="fa-solid fa-cog"></i><span className="hidden sm:inline">Settings</span></button>
                       <button onClick={openAddModal} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-red-500/10 flex items-center gap-2 shadow-lg shadow-red-500/20"><i className="fa-solid fa-plus"></i><span className="hidden sm:inline">Add Item</span></button>
                     </>
                   )}
