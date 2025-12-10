@@ -197,17 +197,17 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
         onSave({
           id: productToEdit?.id,
           name: formData.name,
-          service_type: formData.serviceType || 'Digital Service',
-          account_type: formData.accountType,
-          prices: [{ duration: 'lifetime', price: Number(formData.originalPrice) }],
-          discountedPrice: Number(formData.discountedPrice),
+          serviceType: formData.serviceType || 'Digital Service',
+          accountType: formData.accountType,
+          originalPrice: Number(formData.originalPrice) || 0,
+          discountedPrice: Number(formData.discountedPrice) || 0,
           description: formData.description || '',
           features: formData.features || [],
           requirements: formData.requirements || 'None',
-          is_hot: formData.isHot ? 1 : 0,
+          isHot: formData.isHot ? 1 : 0,
           icon: formData.icon || 'fa-box',
-          stock: Number(formData.stock),
-          is_visible: formData.isVisible ? 1 : 0
+          stock: Number(formData.stock) || 0,
+          isVisible: formData.isVisible ? 1 : 0
         });
         onClose();
         setFeatureInput('');
@@ -303,7 +303,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                         step="0.01"
                         className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-colors"
                         value={formData.originalPrice || ''}
-                        onChange={e => setFormData({ ...formData, originalPrice: parseFloat(e.target.value) })}
+                        onChange={e => setFormData({ ...formData, originalPrice: e.target.value ? parseFloat(e.target.value) : 0 })}
                         required
                       />
                     </div>
@@ -314,7 +314,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                         step="0.01"
                         className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-colors"
                         value={formData.discountedPrice || ''}
-                        onChange={e => setFormData({ ...formData, discountedPrice: parseFloat(e.target.value) })}
+                        onChange={e => setFormData({ ...formData, discountedPrice: e.target.value ? parseFloat(e.target.value) : 0 })}
                         required
                       />
                     </div>
