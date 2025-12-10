@@ -16,7 +16,7 @@ try {
 }
 
 function isAdmin() {
-    return isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+    return isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'admin';
 }
 
 function ensureSchema($pdo) {
