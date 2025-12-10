@@ -103,7 +103,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
 
             <form onSubmit={handleSubmit} className="space-y-6">
             {/* General Settings */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-globe text-primary"></i> General Information
                 </h2>
@@ -124,7 +124,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             {/* Contact Settings */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-phone text-primary"></i> Contact Information
                 </h2>
@@ -141,7 +141,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             {/* Payment Settings */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-brands fa-paypal text-primary"></i> Payment Integration
                 </h2>
@@ -158,7 +158,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             {/* Social Media */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-share-nodes text-primary"></i> Social Media Links
                 </h2>
@@ -187,7 +187,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             {/* SEO Settings */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-search text-primary"></i> SEO & Meta Tags
                 </h2>
@@ -212,7 +212,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             {/* Branding */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-palette text-primary"></i> Branding
                 </h2>
@@ -229,7 +229,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             {/* Analytics */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-chart-line text-primary"></i> Analytics & Tracking
                 </h2>
@@ -246,7 +246,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             {/* Legal Pages */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-file-contract text-primary"></i> Legal Pages
                 </h2>
@@ -267,7 +267,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             </div>
 
             {/* System Settings */}
-            <div className="glass-panel rounded-2xl p-6">
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-server text-primary"></i> System Settings
                 </h2>
@@ -276,9 +276,9 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                         <label className="block text-xs font-medium text-gray-400 mb-1">Timezone</label>
                         <input type="text" name="timezone" defaultValue={settings.timezone || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="UTC" />
                     </div>
-                    <div classname="flex items-center gap-3 pt-6" defaultValue={settings.flex items-center gap-3 pt-6 || ""}>
-                        <input type="checkbox" name="maintenance_mode" id="maintenance_mode" className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-red-500 focus:ring-red-500" />
-                        <label for="maintenance_mode" className="text-sm text-gray-300 cursor-pointer select-none">Enable Maintenance Mode</label>
+                    <div className="flex items-center gap-3 pt-6">
+                        <input type="checkbox" name="maintenance_mode" id="maintenance_mode" defaultChecked={settings.maintenance_mode} className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-red-500 focus:ring-red-500" />
+                        <label htmlFor="maintenance_mode" className="text-sm text-gray-300 cursor-pointer select-none">Enable Maintenance Mode</label>
                     </div>
                 </div>
             </div>
