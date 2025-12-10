@@ -166,6 +166,33 @@ switch ($action) {
             exit;
         }
         
+        // Get order details to check if it's already approved
+        $stmt = $pdo->prepare("SELECT status, products FROM orders WHERE id = ?");
+        $stmt->execute([$id]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$order) {
+            echo json_encode(['error' => 'Order not found']);
+            exit;
+        }
+        
+        // Only decrease stock if order was not previously approved
+        if ($order['status'] !== 'approved') {
+            $products = json_decode($order['products'], true);
+            
+            // Decrease stock for each product
+            foreach ($products as $item) {
+                $productId = $item['id'] ?? null;
+                $quantity = $item['quantity'] ?? 1;
+                
+                if ($productId) {
+                    $stmt = $pdo->prepare("UPDATE products SET stock = GREATEST(0, stock - ?) WHERE id = ?");
+                    $stmt->execute([$quantity, $productId]);
+                }
+            }
+        }
+        
+        // Update order status
         $stmt = $pdo->prepare("UPDATE orders SET status = 'approved', expiry_date = ?, admin_notes = ? WHERE id = ?");
         $stmt->execute([$expiry_date, $admin_notes, $id]);
         
