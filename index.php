@@ -42,7 +42,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="text/babel" data-presets="react">
+    <script type="text/babel" data-presets="env,react">
       const { useState, useEffect, useCallback } = React;
       const { createRoot } = ReactDOM;
 
