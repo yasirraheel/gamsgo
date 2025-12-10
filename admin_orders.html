@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders Management - Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3b82f6',
+            secondary: '#8b5cf6',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const Toast = ({ message, type, onClose }) => (
+      <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white`}>
+        <div className="flex items-center gap-2">
+          <i className={`fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+          <span>{message}</span>
+          <button onClick={onClose} className="ml-4 text-white hover:text-gray-200">
+            <i className="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    );
+
+    const ApproveModal = ({ order, onClose, onApprove }) => {
+      const [expiryDate, setExpiryDate] = useState('');
+      const [adminNotes, setAdminNotes] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onApprove(order.id, expiryDate, adminNotes);
+      };
+
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-md w-full">
+            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Approve Order #{order.id}</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-white">
+                <i className="fas fa-times text-xl"></i>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Expiry Date *</label>
+                <input
+                  type="date"
+                  required
+                  value={expiryDate}
+                  onChange={(e) => setExpiryDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Admin Notes (Optional)</label>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
+                  rows="3"
+                  placeholder="Add notes for the customer"
+                ></textarea>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors"
+                >
+                  <i className="fas fa-check mr-2"></i>
+                  Approve Order
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    };
+
+    const RejectModal = ({ order, onClose, onReject }) => {
+      const [adminNotes, setAdminNotes] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onReject(order.id, adminNotes);
+      };
+
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-md w-full">
+            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Reject Order #{order.id}</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-white">
+                <i className="fas fa-times text-xl"></i>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Reason for Rejection (Optional)</label>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary text-white"
+                  rows="3"
+                  placeholder="Explain why the order is being rejected"
+                ></textarea>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
+                >
+                  <i className="fas fa-times mr-2"></i>
+                  Reject Order
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    };
+
+    const OrderDetailsModal = ({ order, onClose, settings }) => {
+      if (!order) return null;
+
+      const currency = settings?.currency || '$';
+
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800">
+              <h2 className="text-2xl font-bold">Order #{order.id}</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-white">
+                <i className="fas fa-times text-xl"></i>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="text-lg font-bold mb-3">Customer</h3>
+                <div className="bg-gray-700 p-4 rounded-lg">
+                  <p className="font-medium">{order.user_email}</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold mb-3">Products</h3>
+                <div className="space-y-2">
+                  {order.products.map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
+                      <div>
+                        <div className="font-medium">{item.name}</div>
+                        <div className="text-sm text-gray-400">Qty: {item.quantity}</div>
+                      </div>
+                      <div className="font-semibold">{currency}{(item.price * item.quantity).toFixed(2)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold mb-3">Payment Information</h3>
+                <div className="bg-gray-700 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Method:</span>
+                    <span className="font-medium">{order.payment_gateway_name}</span>
+                  </div>
+                  <div className="flex justify-between text-xl font-bold border-t border-gray-600 pt-2">
+                    <span>Total:</span>
+                    <span className="text-primary">{currency}{parseFloat(order.total_amount).toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold mb-3">Shipping Address</h3>
+                <div className="bg-gray-700 p-4 rounded-lg">
+                  <p>{order.city}, {order.country}</p>
+                  <p className="text-gray-400">Postal Code: {order.postal_code}</p>
+                </div>
+              </div>
+
+              {order.expiry_date && (
+                <div>
+                  <h3 className="text-lg font-bold mb-3">Subscription Expiry</h3>
+                  <div className="bg-gray-700 p-4 rounded-lg">
+                    {new Date(order.expiry_date).toLocaleDateString()}
+                  </div>
+                </div>
+              )}
+
+              {order.admin_notes && (
+                <div>
+                  <h3 className="text-lg font-bold mb-3">Admin Notes</h3>
+                  <div className="bg-gray-700 p-4 rounded-lg text-gray-300">
+                    {order.admin_notes}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-sm text-gray-400">
+                <i className="fas fa-clock mr-2"></i>
+                Order placed: {new Date(order.created_at).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const App = () => {
+      const [orders, setOrders] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [statusFilter, setStatusFilter] = useState('all');
+      const [selectedOrder, setSelectedOrder] = useState(null);
+      const [approveOrder, setApproveOrder] = useState(null);
+      const [rejectOrder, setRejectOrder] = useState(null);
+      const [toast, setToast] = useState(null);
+      const [settings, setSettings] = useState(null);
+
+      useEffect(() => {
+        loadOrders();
+        loadSettings();
+      }, [statusFilter]);
+
+      const loadOrders = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`orders.php?action=list_all&status=${statusFilter}`);
+          const data = await res.json();
+          
+          if (data.error) {
+            showToast(data.error, 'error');
+            if (data.error === 'Unauthorized') {
+              window.location.href = 'index.php';
+            }
+          } else if (Array.isArray(data)) {
+            setOrders(data);
+          }
+        } catch (err) {
+          showToast('Failed to load orders', 'error');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const loadSettings = async () => {
+        try {
+          const res = await fetch('settings.php?action=get');
+          const data = await res.json();
+          if (data && !data.error) {
+            setSettings(data);
+          }
+        } catch (err) {
+          console.warn('Failed to load settings', err);
+        }
+      };
+
+      const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+      };
+
+      const handleApprove = async (orderId, expiryDate, adminNotes) => {
+        try {
+          const res = await fetch('orders.php?action=approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: orderId, expiry_date: expiryDate, admin_notes: adminNotes })
+          });
+          
+          const data = await res.json();
+          if (data.success) {
+            showToast('Order approved successfully');
+            setApproveOrder(null);
+            loadOrders();
+          } else {
+            showToast(data.error || 'Failed to approve order', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to approve order', 'error');
+        }
+      };
+
+      const handleReject = async (orderId, adminNotes) => {
+        try {
+          const res = await fetch('orders.php?action=reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: orderId, admin_notes: adminNotes })
+          });
+          
+          const data = await res.json();
+          if (data.success) {
+            showToast('Order rejected');
+            setRejectOrder(null);
+            loadOrders();
+          } else {
+            showToast(data.error || 'Failed to reject order', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to reject order', 'error');
+        }
+      };
+
+      const handleDelete = async (orderId) => {
+        if (!confirm('Are you sure you want to delete this order?')) return;
+        
+        try {
+          const res = await fetch('orders.php?action=delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: orderId })
+          });
+          
+          const data = await res.json();
+          if (data.success) {
+            showToast('Order deleted');
+            loadOrders();
+          } else {
+            showToast(data.error || 'Failed to delete order', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to delete order', 'error');
+        }
+      };
+
+      const getStatusColor = (status) => {
+        switch (status) {
+          case 'approved': return 'bg-green-600 text-white';
+          case 'rejected': return 'bg-red-600 text-white';
+          default: return 'bg-yellow-600 text-white';
+        }
+      };
+
+      const getStatusIcon = (status) => {
+        switch (status) {
+          case 'approved': return 'fa-check-circle';
+          case 'rejected': return 'fa-times-circle';
+          default: return 'fa-clock';
+        }
+      };
+
+      const currency = settings?.currency || '$';
+
+      const pendingCount = orders.filter(o => o.status === 'pending').length;
+
+      return (
+        <div className="min-h-screen bg-gray-900 p-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Orders Management</h1>
+                <p className="text-gray-400">Manage customer orders and approvals</p>
+              </div>
+              <div className="flex gap-3">
+                <a href="settings.html" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                  <i className="fas fa-cog mr-2"></i>Settings
+                </a>
+                <a href="payment_gateways.html" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                  <i className="fas fa-credit-card mr-2"></i>Gateways
+                </a>
+                <a href="index.php" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                  <i className="fas fa-home mr-2"></i>Home
+                </a>
+              </div>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex gap-2 mb-6 overflow-x-auto">
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === 'all' ? 'bg-primary text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                All Orders ({orders.length})
+              </button>
+              <button
+                onClick={() => setStatusFilter('pending')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                <i className="fas fa-clock mr-1"></i>
+                Pending {pendingCount > 0 && `(${pendingCount})`}
+              </button>
+              <button
+                onClick={() => setStatusFilter('approved')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                <i className="fas fa-check-circle mr-1"></i>
+                Approved
+              </button>
+              <button
+                onClick={() => setStatusFilter('rejected')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                  statusFilter === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                <i className="fas fa-times-circle mr-1"></i>
+                Rejected
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <i className="fas fa-spinner fa-spin text-4xl text-primary"></i>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="bg-gray-800 rounded-lg p-12 text-center">
+                <i className="fas fa-inbox text-6xl text-gray-700 mb-4"></i>
+                <h2 className="text-2xl font-bold mb-2">No Orders Found</h2>
+                <p className="text-gray-400">
+                  {statusFilter === 'all' ? 'No orders have been placed yet' : `No ${statusFilter} orders`}
+                </p>
+              </div>
+            ) : (
+              <div className="bg-gray-800 rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-700">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Order ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Customer</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Products</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {orders.map((order) => (
+                      <tr key={order.id} className="hover:bg-gray-750">
+                        <td className="px-6 py-4 font-medium">#{order.id}</td>
+                        <td className="px-6 py-4 text-sm">{order.user_email}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <div className="flex flex-wrap gap-1">
+                            {order.products.slice(0, 2).map((p, i) => (
+                              <span key={i} className="bg-gray-700 px-2 py-1 rounded text-xs">{p.name}</span>
+                            ))}
+                            {order.products.length > 2 && (
+                              <span className="text-gray-400 text-xs">+{order.products.length - 2} more</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-primary">{currency}{parseFloat(order.total_amount).toFixed(2)}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)} inline-flex items-center gap-1`}>
+                            <i className={`fas ${getStatusIcon(order.status)}`}></i>
+                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">{new Date(order.created_at).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-right text-sm">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => setSelectedOrder(order)}
+                              className="text-blue-400 hover:text-blue-300 p-2"
+                              title="View Details"
+                            >
+                              <i className="fas fa-eye"></i>
+                            </button>
+                            {order.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => setApproveOrder(order)}
+                                  className="text-green-400 hover:text-green-300 p-2"
+                                  title="Approve"
+                                >
+                                  <i className="fas fa-check"></i>
+                                </button>
+                                <button
+                                  onClick={() => setRejectOrder(order)}
+                                  className="text-red-400 hover:text-red-300 p-2"
+                                  title="Reject"
+                                >
+                                  <i className="fas fa-times"></i>
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => handleDelete(order.id)}
+                              className="text-red-400 hover:text-red-300 p-2"
+                              title="Delete"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {approveOrder && (
+            <ApproveModal 
+              order={approveOrder} 
+              onClose={() => setApproveOrder(null)}
+              onApprove={handleApprove}
+            />
+          )}
+
+          {rejectOrder && (
+            <RejectModal 
+              order={rejectOrder} 
+              onClose={() => setRejectOrder(null)}
+              onReject={handleReject}
+            />
+          )}
+
+          {selectedOrder && (
+            <OrderDetailsModal 
+              order={selectedOrder} 
+              onClose={() => setSelectedOrder(null)}
+              settings={settings}
+            />
+          )}
+
+          {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
+</html>

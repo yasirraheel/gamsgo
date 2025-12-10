@@ -360,7 +360,33 @@
               </div>
               <div className="p-6 border-t border-gray-800 bg-[#1e293b]/30">
                 <div className="flex justify-between items-center mb-4"><span className="text-gray-400">Total</span><span className="text-2xl font-bold text-white">${total.toFixed(2)}</span></div>
-                <button className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed" disabled={cart.length === 0}>Checkout Now</button>
+                {currentUser ? (
+                  <button 
+                    onClick={() => window.location.href = 'checkout.php'} 
+                    className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed" 
+                    disabled={cart.length === 0}
+                  >
+                    <i className="fa-solid fa-credit-card mr-2"></i>Checkout Now
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); onClose(); }} 
+                    className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
+                  >
+                    <i className="fa-solid fa-right-to-bracket mr-2"></i>Login to Checkout
+                  </button>
+                )}
+                {settings?.whatsapp_number && (
+                  <a 
+                    href={`https://wa.me/${settings.whatsapp_number.replace(/[^0-9]/g, '')}?text=Hi, I need help with my order`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-brands fa-whatsapp text-xl"></i>
+                    Quick Support on WhatsApp
+                  </a>
+                )}
               </div>
             </div>
           </>
@@ -662,6 +688,7 @@
                 <div className="flex items-center gap-3">
                   {currentUser ? (
                     <>
+                      <button onClick={() => window.location.href = 'user_orders.html'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="My Orders"><i className="fa-solid fa-receipt"></i><span className="hidden sm:inline">My Orders</span></button>
                       <div className="hidden md:flex flex-col text-right text-xs leading-tight text-gray-400">
                         <span className="text-white font-semibold">{currentUser.email}</span>
                         <span className={isAdmin ? 'text-red-400 font-semibold' : 'text-gray-500'}>{isAdmin ? 'Admin' : 'User'}</span>
@@ -677,6 +704,7 @@
                   <button onClick={() => setIsCartOpen(true)} className="relative p-2 text-gray-400 hover:text-white transition-colors mr-2"><i className="fa-solid fa-cart-shopping"></i>{cart.length > 0 && (<span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-lg border border-[#0f172a]">{cart.length}</span>)}</button>
                   {isAdmin && (
                     <>
+                      <button onClick={() => window.location.href = 'admin_orders.html'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Orders Management"><i className="fa-solid fa-list-check"></i><span className="hidden sm:inline">Orders</span></button>
                       <button onClick={() => window.location.href = 'payment_gateways.html'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Payment Gateways"><i className="fa-solid fa-credit-card"></i><span className="hidden sm:inline">Gateways</span></button>
                       <button onClick={() => window.location.href = 'settings.html'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Settings"><i className="fa-solid fa-cog"></i><span className="hidden sm:inline">Settings</span></button>
                       <button onClick={openAddModal} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-red-500/10 flex items-center gap-2 shadow-lg shadow-red-500/20"><i className="fa-solid fa-plus"></i><span className="hidden sm:inline">Add Item</span></button>
