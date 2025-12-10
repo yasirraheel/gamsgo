@@ -582,7 +582,8 @@ $faviconUrl = $settings['favicon_url'] ?? '';
             const data = await res.json();
             if (data && !data.error) {
               setSettings(data);
-              document.title = data.site_name || 'DigiMarket';
+              // Use meta_title for SEO, fallback to site_name
+              document.title = data.meta_title || (data.site_name ? data.site_name + ' - Premium Digital Assets' : 'DigiMarket');
               if (data.favicon_url) {
                 let link = document.querySelector("link[rel~='icon']");
                 if (!link) {
