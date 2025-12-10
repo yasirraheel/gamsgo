@@ -422,8 +422,59 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
     };
 
     const App = () => {
+      const [currentUser, setCurrentUser] = useState(null);
+      const [stats, setStats] = useState({});
+
+      useEffect(() => {
+        loadUser();
+        loadStats();
+      }, []);
+
+      const loadUser = async () => {
+        try {
+          const res = await fetch('auth.php?action=status');
+          const data = await res.json();
+          if (data.authenticated) {
+            setCurrentUser(data.user);
+          }
+        } catch (err) {
+          console.error('Failed to load user', err);
+        }
+      };
+
+      const loadStats = async () => {
+        try {
+          const res = await fetch('orders.php?action=stats');
+          const data = await res.json();
+          setStats(data);
+        } catch (err) {
+          console.error('Failed to load stats', err);
+        }
+      };
+
+      const menuItems = [
+        { name: 'Dashboard', icon: 'fa-chart-line', href: 'admin.php' },
+        { name: 'Orders', icon: 'fa-list-check', href: 'admin_orders.php', badge: stats.pendingOrders },
+        { name: 'Products', icon: 'fa-box', href: 'admin_products.php' },
+        { name: 'Payment Gateways', icon: 'fa-credit-card', href: 'admin_gateways.php' },
+        { name: 'Settings', icon: 'fa-cog', href: 'admin_settings.php' },
+      ];
+
+      if (!currentUser) {
+        return (
+          <div className="flex items-center justify-center h-screen bg-gray-900">
+            <i className="fas fa-spinner fa-spin text-4xl text-primary"></i>
+          </div>
+        );
+      }
+
       return (
-        <AdminLayout activePage="gateways">
+        <AdminLayout 
+          currentPage="admin_gateways.php"
+          currentUser={currentUser}
+          stats={stats}
+          menuItems={menuItems}
+        >
           <GatewaysView />
         </AdminLayout>
       );
