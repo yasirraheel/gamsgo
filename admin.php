@@ -27,20 +27,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel" data-presets="env,react">
-    const { useState, useEffect, useRef } = React;
-
-    // Toast Component
-    const Toast = ({ message, type, onClose }) => (
-      <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white`}>
-        <div className="flex items-center gap-2">
-          <i className={`fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
-          <span>{message}</span>
-          <button onClick={onClose} className="ml-4 text-white hover:text-gray-200">
-            <i className="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-    );
+    const { useState, useEffect } = React;
 
     // StatCard Component
     const StatCard = ({ title, value, icon, color, trend }) => (
@@ -63,108 +50,7 @@
       </div>
     );
 
-    // Admin Layout Component
-    const AdminLayout = ({ children, currentView, setCurrentView, currentUser, stats }) => {
-      const [sidebarOpen, setSidebarOpen] = useState(true);
-
-      const handleLogout = async () => {
-        await fetch('auth.php?action=logout', { method: 'POST' });
-        window.location.href = 'index.php';
-      };
-
-      const menuItems = [
-        { name: 'Dashboard', icon: 'fa-chart-line', view: 'dashboard', badge: null },
-        { name: 'Orders', icon: 'fa-list-check', view: 'orders', badge: stats.pendingOrders },
-        { name: 'Products', icon: 'fa-box', view: 'products', badge: null },
-        { name: 'Payment Gateways', icon: 'fa-credit-card', view: 'gateways', badge: null },
-        { name: 'Settings', icon: 'fa-cog', view: 'settings', badge: null },
-      ];
-
-      return (
-        <div className="flex h-screen bg-gray-900">
-          {/* Sidebar */}
-          <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gray-800 border-r border-gray-700 transition-all duration-300 flex flex-col`}>
-            {/* Logo */}
-            <div className="h-16 flex items-center justify-between px-4 border-b border-gray-700">
-              {sidebarOpen ? (
-                <>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                      <i className="fas fa-shield-halved text-white text-sm"></i>
-                    </div>
-                    <span className="font-bold text-lg">Admin Panel</span>
-                  </div>
-                  <button onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-white">
-                    <i className="fas fa-angles-left"></i>
-                  </button>
-                </>
-              ) : (
-                <button onClick={() => setSidebarOpen(true)} className="text-gray-400 hover:text-white mx-auto">
-                  <i className="fas fa-angles-right"></i>
-                </button>
-              )}
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-              {menuItems.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentView(item.view)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all ${
-                    currentView === item.view 
-                      ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                      : 'text-gray-400 hover:bg-gray-700 hover:text-white'
-                  }`}
-                  title={!sidebarOpen ? item.name : ''}
-                >
-                  <i className={`fas ${item.icon} text-lg ${sidebarOpen ? '' : 'mx-auto'}`}></i>
-                  {sidebarOpen && (
-                    <>
-                      <span className="flex-1 text-left">{item.name}</span>
-                      {item.badge > 0 && (
-                        <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          {item.badge}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </button>
-              ))}
-            </nav>
-
-            {/* User Profile */}
-            <div className="border-t border-gray-700 p-4">
-              <div className={`flex items-center gap-3 ${!sidebarOpen && 'justify-center'}`}>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-                  <i className="fas fa-user"></i>
-                </div>
-                {sidebarOpen && (
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{currentUser?.email}</p>
-                    <p className="text-xs text-gray-400">Administrator</p>
-                  </div>
-                )}
-              </div>
-              {sidebarOpen && (
-                <button
-                  onClick={handleLogout}
-                  className="w-full mt-3 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-                >
-                  <i className="fas fa-sign-out-alt"></i>
-                  <span>Logout</span>
-                </button>
-              )}
-            </div>
-          </aside>
-
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto flex flex-col">
-            {children}
-          </main>
-        </div>
-      );
-    };
+    <?php include 'admin_layout_component.php'; ?>
 
     // Dashboard View
     const DashboardView = ({ stats, recentOrders, loading, currentUser }) => {
@@ -753,24 +639,8 @@
       );
     };
 
-    // Gateways and Settings views will go to separate pages for now
-    const GatewaysView = () => {
-      useEffect(() => {
-        window.location.href = 'payment_gateways_admin.php';
-      }, []);
-      return <div className="flex items-center justify-center h-screen"><i className="fas fa-spinner fa-spin text-4xl"></i></div>;
-    };
-
-    const SettingsView = () => {
-      useEffect(() => {
-        window.location.href = 'settings_admin.php';
-      }, []);
-      return <div className="flex items-center justify-center h-screen"><i className="fas fa-spinner fa-spin text-4xl"></i></div>;
-    };
-
     // Main App Component
     const App = () => {
-      const [currentView, setCurrentView] = useState('dashboard');
       const [currentUser, setCurrentUser] = useState(null);
       const [stats, setStats] = useState({
         totalOrders: 0,
@@ -783,20 +653,9 @@
       const [loading, setLoading] = useState(true);
 
       useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const view = urlParams.get('view') || 'dashboard';
-        setCurrentView(view);
-        
         checkAuth();
         loadDashboardData();
       }, []);
-
-      useEffect(() => {
-        window.history.replaceState({}, '', `admin.php?view=${currentView}`);
-        if (currentView === 'dashboard') {
-          loadDashboardData();
-        }
-      }, [currentView]);
 
       const checkAuth = async () => {
         try {
@@ -848,22 +707,13 @@
         }
       };
 
-      const renderView = () => {
-        switch (currentView) {
-          case 'dashboard':
-            return <DashboardView stats={stats} recentOrders={recentOrders} loading={loading} currentUser={currentUser} />;
-          case 'orders':
-            return <OrdersView />;
-          case 'products':
-            return <ProductsView />;
-          case 'gateways':
-            return <GatewaysView />;
-          case 'settings':
-            return <SettingsView />;
-          default:
-            return <DashboardView stats={stats} recentOrders={recentOrders} loading={loading} currentUser={currentUser} />;
-        }
-      };
+      const menuItems = [
+        { name: 'Dashboard', icon: 'fa-chart-line', href: 'admin.php' },
+        { name: 'Orders', icon: 'fa-list-check', href: 'admin_orders.php', badge: stats.pendingOrders },
+        { name: 'Products', icon: 'fa-box', href: 'admin_products.php' },
+        { name: 'Payment Gateways', icon: 'fa-credit-card', href: 'admin_gateways.php' },
+        { name: 'Settings', icon: 'fa-cog', href: 'admin_settings.php' },
+      ];
 
       if (!currentUser) {
         return (
@@ -875,12 +725,12 @@
 
       return (
         <AdminLayout 
-          currentView={currentView} 
-          setCurrentView={setCurrentView} 
+          currentPage="admin.php"
           currentUser={currentUser}
           stats={stats}
+          menuItems={menuItems}
         >
-          {renderView()}
+          <DashboardView stats={stats} recentOrders={recentOrders} loading={loading} currentUser={currentUser} />
         </AdminLayout>
       );
     };
