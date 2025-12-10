@@ -23,6 +23,8 @@ function db() {
 }
 
 function ensureSchema() {
+    $pdo = db();
+    
     $sql = "CREATE TABLE IF NOT EXISTS products (
         id VARCHAR(36) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -41,7 +43,14 @@ function ensureSchema() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-    db()->exec($sql);
+    $pdo->exec($sql);
+    
+    // Add validity_months column if it doesn't exist (for existing tables)
+    try {
+        $pdo->exec("ALTER TABLE products ADD COLUMN validity_months INT DEFAULT 1");
+    } catch (PDOException $e) {
+        // Column already exists, ignore error
+    }
 }
 
 function jsonBody() {
