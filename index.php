@@ -1,10 +1,46 @@
-<?php // Simple PHP entry to serve the app without a build step ?>
+<?php
+// Load settings for SEO
+require_once 'db.php';
+$pdo = db();
+$stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
+$settings = $stmt->fetch();
+
+$pageTitle = $settings['meta_title'] ?? ($settings['site_name'] ?? 'DigiMarket') . ' - Premium Digital Assets';
+$metaDescription = $settings['meta_description'] ?? 'Discover premium digital subscriptions and assets';
+$metaKeywords = $settings['meta_keywords'] ?? 'digital assets, marketplace, subscriptions';
+$ogImage = $settings['og_image_url'] ?? '';
+$siteName = $settings['site_name'] ?? 'DigiMarket';
+$faviconUrl = $settings['favicon_url'] ?? '';
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DigiMarket - Premium Digital Assets</title>
+    <title><?php echo htmlspecialchars($pageTitle); ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($metaDescription); ?>" />
+    <meta name="keywords" content="<?php echo htmlspecialchars($metaKeywords); ?>" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
+    <meta property="og:description" content="<?php echo htmlspecialchars($metaDescription); ?>" />
+    <?php if ($ogImage): ?>
+    <meta property="og:image" content="<?php echo htmlspecialchars($ogImage); ?>" />
+    <?php endif; ?>
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
+    <meta name="twitter:description" content="<?php echo htmlspecialchars($metaDescription); ?>" />
+    <?php if ($ogImage): ?>
+    <meta name="twitter:image" content="<?php echo htmlspecialchars($ogImage); ?>" />
+    <?php endif; ?>
+    
+    <?php if ($faviconUrl): ?>
+    <link rel="icon" href="<?php echo htmlspecialchars($faviconUrl); ?>" />
+    <?php endif; ?>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -35,6 +71,38 @@
       ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
       ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
+    
+    <?php if (!empty($settings['google_analytics_id'])): ?>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($settings['google_analytics_id']); ?>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '<?php echo htmlspecialchars($settings['google_analytics_id']); ?>');
+    </script>
+    <?php endif; ?>
+    
+    <?php if (!empty($settings['facebook_pixel_id'])): ?>
+    <!-- Facebook Pixel -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '<?php echo htmlspecialchars($settings['facebook_pixel_id']); ?>');
+      fbq('track', 'PageView');
+    </script>
+    <noscript>
+      <img height="1" width="1" style="display:none" 
+           src="https://www.facebook.com/tr?id=<?php echo htmlspecialchars($settings['facebook_pixel_id']); ?>&ev=PageView&noscript=1" />
+    </noscript>
+    <?php endif; ?>
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
