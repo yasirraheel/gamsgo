@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+    header('Location: auth.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +34,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel" data-presets="env,react">
+    <?php include 'admin_layout_component.php'; ?>
     const { useState, useEffect } = React;
 
     const Toast = ({ message, type, onClose }) => (
@@ -200,7 +208,7 @@
       );
     };
 
-    const App = () => {
+    const GatewaysView = () => {
       const [gateways, setGateways] = useState([]);
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [editingGateway, setEditingGateway] = useState(null);
@@ -302,28 +310,19 @@
       };
 
       return (
-        <div className="min-h-screen bg-gray-900 p-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Payment Gateways</h1>
-                <p className="text-gray-400">Manage payment methods for your marketplace</p>
-              </div>
-              <div className="flex gap-3">
-                <a href="settings.html" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                  <i className="fas fa-cog mr-2"></i>Settings
-                </a>
-                <a href="index.php" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                  <i className="fas fa-home mr-2"></i>Home
-                </a>
-                <button
-                  onClick={() => { setEditingGateway(null); setIsModalOpen(true); }}
-                  className="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  <i className="fas fa-plus mr-2"></i>Add Gateway
-                </button>
-              </div>
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Payment Gateways</h1>
+              <p className="text-gray-400">Manage payment methods for your marketplace</p>
             </div>
+            <button
+              onClick={() => { setEditingGateway(null); setIsModalOpen(true); }}
+              className="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              <i className="fas fa-plus mr-2"></i>Add Gateway
+            </button>
+          </div>
 
             {loading ? (
               <div className="text-center py-12">
@@ -407,7 +406,6 @@
                 </table>
               </div>
             )}
-          </div>
 
           {isModalOpen && (
             <GatewayModal
@@ -419,6 +417,14 @@
 
           {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         </div>
+      );
+    };
+
+    const App = () => {
+      return (
+        <AdminLayout activePage="gateways">
+          <GatewaysView />
+        </AdminLayout>
       );
     };
 
