@@ -260,12 +260,12 @@
           {/* Header */}
           <nav className="fixed top-0 w-full z-40 glass-panel border-b-0 border-b-white/5 bg-gray-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <button onClick={() => window.location.href = 'index.php'} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <div className={`w-8 h-8 rounded bg-gradient-to-tr ${isAdmin ? 'from-red-500 to-orange-500' : 'from-primary to-secondary'} flex items-center justify-center text-white font-bold transition-all duration-500`}>
                   {isAdmin ? <i className="fa-solid fa-lock-open text-xs"></i> : (settings?.site_name || 'DigiMarket').charAt(0).toUpperCase()}
                 </div>
                 <span className="font-bold text-xl tracking-tight text-white">{settings?.site_name || 'DigiMarket'}</span>
-              </div>
+              </button>
               <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="p-2 text-gray-400 hover:text-white transition-colors"
