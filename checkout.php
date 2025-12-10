@@ -88,7 +88,11 @@
       };
 
       const calculateSubtotal = () => {
-        return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        return cart.reduce((sum, item) => {
+          const price = item.discountedPrice || item.price || 0;
+          const quantity = item.quantity || 1;
+          return sum + (price * quantity);
+        }, 0);
       };
 
       const calculateFee = () => {
@@ -141,7 +145,7 @@
             localStorage.removeItem('digimarket_cart');
             showToast('Order placed successfully!');
             setTimeout(() => {
-              window.location.href = 'user_orders.html';
+              window.location.href = 'user_orders.php';
             }, 1500);
           } else {
             showToast(data.error || 'Failed to place order', 'error');
@@ -172,15 +176,19 @@
                 <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
                 
                 <div className="space-y-3 mb-6">
-                  {cart.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-700">
-                      <div>
-                        <div className="font-medium">{item.name}</div>
-                        <div className="text-sm text-gray-400">Qty: {item.quantity}</div>
+                  {cart.map((item, idx) => {
+                    const price = item.discountedPrice || item.price || 0;
+                    const quantity = item.quantity || 1;
+                    return (
+                      <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-700">
+                        <div>
+                          <div className="font-medium">{item.name}</div>
+                          <div className="text-sm text-gray-400">Qty: {quantity}</div>
+                        </div>
+                        <div className="font-semibold">{currency}{(price * quantity).toFixed(2)}</div>
                       </div>
-                      <div className="font-semibold">{currency}{(item.price * item.quantity).toFixed(2)}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="space-y-2 text-sm border-t border-gray-700 pt-4">
