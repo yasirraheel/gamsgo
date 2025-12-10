@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+    header('Location: auth.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,6 +35,8 @@
 
   <script type="text/babel" data-presets="env,react">
     const { useState, useEffect } = React;
+
+    <?php include 'admin_layout_component.php'; ?>
 
     const Toast = ({ message, type, onClose }) => (
       <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white`}>
@@ -246,7 +255,7 @@
       );
     };
 
-    const App = () => {
+    const OrdersView = () => {
       const [orders, setOrders] = useState([]);
       const [loading, setLoading] = useState(true);
       const [statusFilter, setStatusFilter] = useState('all');
@@ -384,25 +393,13 @@
       const pendingCount = orders.filter(o => o.status === 'pending').length;
 
       return (
-        <div className="min-h-screen bg-gray-900 p-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Orders Management</h1>
-                <p className="text-gray-400">Manage customer orders and approvals</p>
-              </div>
-              <div className="flex gap-3">
-                <a href="settings.html" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                  <i className="fas fa-cog mr-2"></i>Settings
-                </a>
-                <a href="payment_gateways.html" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                  <i className="fas fa-credit-card mr-2"></i>Gateways
-                </a>
-                <a href="index.php" className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
-                  <i className="fas fa-home mr-2"></i>Home
-                </a>
-              </div>
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Orders Management</h1>
+              <p className="text-gray-400">Manage customer orders and approvals</p>
             </div>
+          </div>
 
             {/* Filter Tabs */}
             <div className="flex gap-2 mb-6 overflow-x-auto">
@@ -534,7 +531,6 @@
                 </table>
               </div>
             )}
-          </div>
 
           {approveOrder && (
             <ApproveModal 
@@ -562,6 +558,65 @@
 
           {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         </div>
+      );
+    };
+
+    const App = () => {
+      const [currentUser, setCurrentUser] = useState(null);
+      const [stats, setStats] = useState({});
+
+      useEffect(() => {
+        loadUser();
+        loadStats();
+      }, []);
+
+      const loadUser = async () => {
+        try {
+          const res = await fetch('auth.php?action=me');
+          const data = await res.json();
+          if (data.email) {
+            setCurrentUser(data);
+          }
+        } catch (err) {
+          console.error('Failed to load user', err);
+        }
+      };
+
+      const loadStats = async () => {
+        try {
+          const res = await fetch('orders.php?action=stats');
+          const data = await res.json();
+          setStats(data);
+        } catch (err) {
+          console.error('Failed to load stats', err);
+        }
+      };
+
+      const menuItems = [
+        { name: 'Dashboard', icon: 'fa-chart-line', href: 'admin.php' },
+        { name: 'Orders', icon: 'fa-list-check', href: 'admin_orders.php', badge: stats.pendingOrders },
+        { name: 'Products', icon: 'fa-box', href: 'admin_products.php' },
+        { name: 'Payment Gateways', icon: 'fa-credit-card', href: 'admin_gateways.php' },
+        { name: 'Settings', icon: 'fa-cog', href: 'admin_settings.php' },
+      ];
+
+      if (!currentUser) {
+        return (
+          <div className="flex items-center justify-center h-screen bg-gray-900">
+            <i className="fas fa-spinner fa-spin text-4xl text-primary"></i>
+          </div>
+        );
+      }
+
+      return (
+        <AdminLayout 
+          currentPage="admin_orders.php"
+          currentUser={currentUser}
+          stats={stats}
+          menuItems={menuItems}
+        >
+          <OrdersView />
+        </AdminLayout>
       );
     };
 
