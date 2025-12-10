@@ -35,7 +35,6 @@
       ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
       ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
-    <link rel="stylesheet" href="/index.css">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
@@ -365,6 +364,54 @@
               </div>
             </div>
           </>
+        );
+      };
+
+      const AuthModal = ({ isOpen, mode, onClose, onSubmit, setMode, email, setEmail, password, setPassword, role, setRole, loading, error }) => {
+        if (!isOpen) return null;
+        const isSignup = mode === 'signup';
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="glass-panel w-full max-w-md rounded-2xl relative z-10 overflow-hidden border border-gray-700 shadow-2xl">
+              <div className="p-6 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <i className={`fa-solid ${isSignup ? 'fa-user-plus' : 'fa-right-to-bracket'} text-primary`}></i>
+                  {isSignup ? 'Create account' : 'Login'}
+                </h2>
+                <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors"><i className="fa-solid fa-xmark text-xl"></i></button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Email</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="you@example.com" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Password</label>
+                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="At least 6 characters" required />
+                </div>
+                {isSignup && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Role</label>
+                    <select value={role} onChange={e => setRole(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary">
+                      <option value="user">User</option>
+                      <option value="admin">Admin (first admin only)</option>
+                    </select>
+                    <p className="text-[11px] text-gray-500 mt-1">Admin role is granted only if no admin exists yet.</p>
+                  </div>
+                )}
+                {error && <div className="text-red-400 text-sm">{error}</div>}
+                <div className="flex items-center justify-between pt-2">
+                  <button onClick={() => setMode(isSignup ? 'login' : 'signup')} className="text-sm text-primary hover:text-primaryDark">
+                    {isSignup ? 'Already have an account? Login' : 'Need an account? Sign up'}
+                  </button>
+                  <button onClick={onSubmit} disabled={loading} className="bg-gradient-to-r from-primary to-secondary text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-primary/20 disabled:opacity-60">
+                    {loading ? 'Please wait...' : isSignup ? 'Sign up' : 'Login'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         );
       };
 
