@@ -280,6 +280,11 @@ $faviconUrl = $settings['favicon_url'] ?? '';
               </div>
               <div className={`p-1.5 px-2 rounded text-[10px] border flex items-center ${product.stock > 0 ? 'bg-emerald-900/20 text-emerald-400 border-emerald-500/20' : 'bg-red-900/20 text-red-400 border-red-500/20'}`}><i className="fa-solid fa-cubes mr-1.5"></i><span>{product.stock > 0 ? `${product.stock} Left` : 'Sold Out'}</span></div>
             </div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="bg-purple-900/20 p-1.5 px-2 rounded text-[10px] text-purple-400 flex items-center border border-purple-500/20 flex-1">
+                <i className="fa-solid fa-clock mr-1.5"></i><span>Validity: {product.validity_months || product.validityMonths || 1} {(product.validity_months || product.validityMonths || 1) === 1 ? 'Month' : 'Months'}</span>
+              </div>
+            </div>
             <div className="pt-4 border-t border-gray-700/50 flex items-center justify-between relative z-10">
               <div>
                 <div className="flex items-center gap-2">
