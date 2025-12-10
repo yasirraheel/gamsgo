@@ -784,16 +784,21 @@
               )}
             </main>
 
-            <footer className="mt-20 border-t border-gray-800 py-10 text-center">
-              <p className="text-gray-500 text-sm">© 2024 {settings?.site_name || 'DigiMarket'}. All rights reserved. <span className="mx-2">|</span><span onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} className="cursor-pointer hover:text-gray-300">Login</span></p>
-              {settings && (settings.facebook_url || settings.twitter_url || settings.instagram_url || settings.whatsapp_number) && (
-                <div className="flex justify-center gap-4 mt-4">
-                  {settings.facebook_url && <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary transition-colors"><i className="fa-brands fa-facebook text-xl"></i></a>}
-                  {settings.twitter_url && <a href={settings.twitter_url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary transition-colors"><i className="fa-brands fa-twitter text-xl"></i></a>}
-                  {settings.instagram_url && <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary transition-colors"><i className="fa-brands fa-instagram text-xl"></i></a>}
-                  {settings.whatsapp_number && <a href={`https://wa.me/${settings.whatsapp_number.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary transition-colors"><i className="fa-brands fa-whatsapp text-xl"></i></a>}
-                </div>
-              )}
+            <footer className="mt-12 border-t border-gray-800 py-4 text-center">
+              <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500">
+                <span>© 2024 {settings?.site_name || 'DigiMarket'}</span>
+                {settings && (settings.facebook_url || settings.twitter_url || settings.instagram_url || settings.whatsapp_number) && (
+                  <>
+                    <span className="hidden sm:inline">•</span>
+                    <div className="flex gap-3">
+                      {settings.facebook_url && <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><i className="fa-brands fa-facebook"></i></a>}
+                      {settings.twitter_url && <a href={settings.twitter_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><i className="fa-brands fa-twitter"></i></a>}
+                      {settings.instagram_url && <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><i className="fa-brands fa-instagram"></i></a>}
+                      {settings.whatsapp_number && <a href={`https://wa.me/${settings.whatsapp_number.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><i className="fa-brands fa-whatsapp"></i></a>}
+                    </div>
+                  </>
+                )}
+              </div>
             </footer>
 
             <ProductModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={editingProduct ? handleUpdateProduct : handleAddProduct} productToEdit={editingProduct} />
