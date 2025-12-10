@@ -34,8 +34,9 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel" data-presets="env,react">
-    <?php include 'admin_layout_component.php'; ?>
     const { useState, useEffect } = React;
+
+    <?php include 'admin_layout_component.php'; ?>
 
     const Toast = ({ message, type, onClose }) => (
       <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white animate-fade-in`}>
