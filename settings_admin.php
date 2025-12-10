@@ -118,7 +118,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-xs font-medium text-gray-400 mb-1">Site Description</label>
-                        <textarea name="site_description" rows="2" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="Premium Digital Assets Marketplace"></textarea>
+                        <textarea name="site_description" rows="2" defaultValue={settings.site_description || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="Premium Digital Assets Marketplace"></textarea>
                     </div>
                 </div>
             </div>
@@ -165,23 +165,23 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-facebook mr-2"></i>Facebook URL</label>
-                        <input type="url" name="facebook_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://facebook.com/yourpage" />
+                        <input type="url" name="facebook_url" defaultValue={settings.facebook_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://facebook.com/yourpage" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-twitter mr-2"></i>Twitter URL</label>
-                        <input type="url" name="twitter_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://twitter.com/yourhandle" />
+                        <input type="url" name="twitter_url" defaultValue={settings.twitter_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://twitter.com/yourhandle" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-instagram mr-2"></i>Instagram URL</label>
-                        <input type="url" name="instagram_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://instagram.com/yourprofile" />
+                        <input type="url" name="instagram_url" defaultValue={settings.instagram_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://instagram.com/yourprofile" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-linkedin mr-2"></i>LinkedIn URL</label>
-                        <input type="url" name="linkedin_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://linkedin.com/company/yourcompany" />
+                        <input type="url" name="linkedin_url" defaultValue={settings.linkedin_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://linkedin.com/company/yourcompany" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1"><i className="fa-brands fa-youtube mr-2"></i>YouTube URL</label>
-                        <input type="url" name="youtube_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://youtube.com/@yourchannel" />
+                        <input type="url" name="youtube_url" defaultValue={settings.youtube_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://youtube.com/@yourchannel" />
                     </div>
                 </div>
             </div>
@@ -198,7 +198,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Meta Description</label>
-                        <textarea name="meta_description" rows="2" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="Discover premium digital subscriptions and assets"></textarea>
+                        <textarea name="meta_description" rows="2" defaultValue={settings.meta_description || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="Discover premium digital subscriptions and assets"></textarea>
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Meta Keywords</label>
@@ -206,7 +206,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">OG Image URL (Social Share)</label>
-                        <input type="url" name="og_image_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/og-image.jpg" />
+                        <input type="url" name="og_image_url" defaultValue={settings.og_image_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/og-image.jpg" />
                     </div>
                 </div>
             </div>
@@ -219,11 +219,11 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Logo URL</label>
-                        <input type="url" name="logo_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/logo.png" />
+                        <input type="url" name="logo_url" defaultValue={settings.logo_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/logo.png" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Favicon URL</label>
-                        <input type="url" name="favicon_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/favicon.ico" />
+                        <input type="url" name="favicon_url" defaultValue={settings.favicon_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/favicon.ico" />
                     </div>
                 </div>
             </div>
@@ -253,15 +253,15 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Terms & Conditions URL</label>
-                        <input type="url" name="terms_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/terms" />
+                        <input type="url" name="terms_url" defaultValue={settings.terms_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/terms" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Privacy Policy URL</label>
-                        <input type="url" name="privacy_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/privacy" />
+                        <input type="url" name="privacy_url" defaultValue={settings.privacy_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/privacy" />
                     </div>
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Refund Policy URL</label>
-                        <input type="url" name="refund_policy_url" className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/refunds" />
+                        <input type="url" name="refund_policy_url" defaultValue={settings.refund_policy_url || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="https://yoursite.com/refunds" />
                     </div>
                 </div>
             </div>
