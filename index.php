@@ -1,9 +1,23 @@
 <?php
 // Load settings for SEO
-require_once 'db.php';
-$pdo = db();
-$stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
-$settings = $stmt->fetch();
+$DB_HOST = 'localhost';
+$DB_NAME = 'u559276167_gamsgo';
+$DB_USER = 'u559276167_gamsgo';
+$DB_PASS = 'Gamsgo@123';
+
+try {
+    $dsn = "mysql:host={$DB_HOST};dbname={$DB_NAME};charset=utf8mb4";
+    $pdo = new PDO($dsn, $DB_USER, $DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+    
+    $stmt = $pdo->query("SELECT * FROM settings LIMIT 1");
+    $settings = $stmt->fetch();
+} catch (Exception $e) {
+    // If database fails, use defaults
+    $settings = [];
+}
 
 $pageTitle = $settings['meta_title'] ?? ($settings['site_name'] ?? 'DigiMarket') . ' - Premium Digital Assets';
 $metaDescription = $settings['meta_description'] ?? 'Discover premium digital subscriptions and assets';
