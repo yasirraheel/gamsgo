@@ -57,8 +57,8 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
 
     // Product Card Component
     const ProductCard = ({ product, onEdit, onDelete, onToggleVisible }) => {
-      const originalPrice = product.prices?.[0]?.price || 0;
-      const discountedPrice = product.discountedPrice || originalPrice;
+      const originalPrice = product.originalPrice || product.original_price || 0;
+      const discountedPrice = product.discountedPrice || product.discounted_price || originalPrice;
       const discountPercent = originalPrice > 0 ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100) : 0;
 
       return (
@@ -158,17 +158,17 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
           setFormData({
             id: productToEdit.id,
             name: productToEdit.name,
-            serviceType: productToEdit.service_type,
-            accountType: productToEdit.account_type,
-            originalPrice: productToEdit.prices?.[0]?.price || 0,
-            discountedPrice: productToEdit.discountedPrice || 0,
+            serviceType: productToEdit.serviceType || productToEdit.service_type,
+            accountType: productToEdit.accountType || productToEdit.account_type,
+            originalPrice: productToEdit.originalPrice || productToEdit.original_price || 0,
+            discountedPrice: productToEdit.discountedPrice || productToEdit.discounted_price || 0,
             features: productToEdit.features || [],
             requirements: productToEdit.requirements || '',
             description: productToEdit.description || '',
-            isHot: productToEdit.is_hot == 1,
+            isHot: productToEdit.isHot || productToEdit.is_hot == 1,
             icon: productToEdit.icon || 'fa-box',
             stock: productToEdit.stock || 0,
-            isVisible: productToEdit.is_visible == 1
+            isVisible: productToEdit.isVisible || productToEdit.is_visible == 1
           });
         } else {
           setFormData({
