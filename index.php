@@ -471,6 +471,9 @@
             const data = await res.json();
             if (data && data.email) {
               setCurrentUser({ email: data.email, role: data.role });
+              if (data.role === 'admin' && !window.location.search.includes('stay')) {
+                window.location.href = 'admin.php';
+              }
             }
           } catch (err) {
             console.warn('Auth check failed', err);
@@ -703,12 +706,10 @@
                   )}
                   <button onClick={() => setIsCartOpen(true)} className="relative p-2 text-gray-400 hover:text-white transition-colors mr-2"><i className="fa-solid fa-cart-shopping"></i>{cart.length > 0 && (<span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-lg border border-[#0f172a]">{cart.length}</span>)}</button>
                   {isAdmin && (
-                    <>
-                      <button onClick={() => window.location.href = 'admin_orders.php'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Orders Management"><i className="fa-solid fa-list-check"></i><span className="hidden sm:inline">Orders</span></button>
-                      <button onClick={() => window.location.href = 'payment_gateways_admin.php'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Payment Gateways"><i className="fa-solid fa-credit-card"></i><span className="hidden sm:inline">Gateways</span></button>
-                      <button onClick={() => window.location.href = 'settings_admin.php'} className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600/10 flex items-center gap-2" title="Settings"><i className="fa-solid fa-cog"></i><span className="hidden sm:inline">Settings</span></button>
-                      <button onClick={openAddModal} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-red-500/10 flex items-center gap-2 shadow-lg shadow-red-500/20"><i className="fa-solid fa-plus"></i><span className="hidden sm:inline">Add Item</span></button>
-                    </>
+                    <button onClick={() => window.location.href = 'admin.php'} className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all border border-red-500/20 flex items-center gap-2 shadow-lg shadow-red-500/30">
+                      <i className="fa-solid fa-shield-halved"></i>
+                      <span className="hidden sm:inline">Admin Panel</span>
+                    </button>
                   )}
                 </div>
               </div>
