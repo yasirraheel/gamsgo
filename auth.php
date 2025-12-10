@@ -5,18 +5,11 @@
 
 session_start();
 
-// TODO: set your database credentials.
-$DB_HOST = 'YOUR_DB_HOST';
-$DB_NAME = 'YOUR_DB_NAME';
-$DB_USER = 'YOUR_DB_USER';
-$DB_PASS = 'YOUR_DB_PASSWORD';
-
-if ($DB_HOST === 'YOUR_DB_HOST') {
-    http_response_code(500);
-    header('Content-Type: application/json');
-    echo json_encode(['error' => 'Please set DB credentials in auth.php']);
-    exit;
-}
+// Database credentials
+$DB_HOST = 'localhost';
+$DB_NAME = 'u559276167_gamsgo';
+$DB_USER = 'u559276167_gamsgo';
+$DB_PASS = 'Gamsgo@123';
 
 header('Content-Type: application/json');
 
