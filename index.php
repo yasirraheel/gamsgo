@@ -435,6 +435,7 @@
         const [authRole, setAuthRole] = useState('user');
         const [authError, setAuthError] = useState('');
         const [authLoading, setAuthLoading] = useState(false);
+        const [settings, setSettings] = useState(null);
 
         const isAdmin = currentUser?.role === 'admin';
 
@@ -466,6 +467,28 @@
           }
         };
 
+        const loadSettings = async () => {
+          try {
+            const res = await fetch('settings.php?action=get');
+            const data = await res.json();
+            if (data && !data.error) {
+              setSettings(data);
+              document.title = data.site_name || 'DigiMarket';
+              if (data.favicon_url) {
+                let link = document.querySelector("link[rel~='icon']");
+                if (!link) {
+                  link = document.createElement('link');
+                  link.rel = 'icon';
+                  document.head.appendChild(link);
+                }
+                link.href = data.favicon_url;
+              }
+            }
+          } catch (err) {
+            console.warn('Failed to load settings', err);
+          }
+        };
+
         useEffect(() => {
           const urlParams = new URLSearchParams(window.location.search);
           const id = urlParams.get('storeId');
@@ -474,6 +497,7 @@
           setStoreId(id);
           fetchCurrentUser();
           loadProducts();
+          loadSettings();
         }, [fetchCurrentUser]);
 
         useEffect(() => {
@@ -622,7 +646,7 @@
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className={`w-8 h-8 rounded bg-gradient-to-tr ${isAdmin ? 'from-red-500 to-orange-500' : 'from-primary to-secondary'} flex items-center justify-center text-white font-bold transition-all duration-500`}>{isAdmin ? <i className="fa-solid fa-lock-open text-xs"></i> : 'D'}</div>
-                  <span className="font-bold text-xl tracking-tight text-white">Digi<span className={isAdmin ? 'text-red-500' : 'text-primary'}>Market</span></span>
+                  <span className="font-bold text-xl tracking-tight text-white">{settings?.site_name || 'DigiMarket'}</span>
                   {storeId ? (
                     <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] uppercase font-bold tracking-wider"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>Live Global</span>
                   ) : (
@@ -731,7 +755,15 @@
             </main>
 
             <footer className="mt-20 border-t border-gray-800 py-10 text-center">
-              <p className="text-gray-500 text-sm">© 2024 DigiMarket. All rights reserved. <span className="mx-2">|</span><span onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} className="cursor-pointer hover:text-gray-300">Login</span></p>
+              <p className="text-gray-500 text-sm">© 2024 {settings?.site_name || 'DigiMarket'}. All rights reserved. <span className="mx-2">|</span><span onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }} className="cursor-pointer hover:text-gray-300">Login</span></p>
+              {settings && (settings.facebook_url || settings.twitter_url || settings.instagram_url || settings.whatsapp_number) && (
+                <div className="flex justify-center gap-4 mt-4">
+                  {settings.facebook_url && <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary transition-colors"><i className="fa-brands fa-facebook text-xl"></i></a>}
+                  {settings.twitter_url && <a href={settings.twitter_url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary transition-colors"><i className="fa-brands fa-twitter text-xl"></i></a>}
+                  {settings.instagram_url && <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary transition-colors"><i className="fa-brands fa-instagram text-xl"></i></a>}
+                  {settings.whatsapp_number && <a href={`https://wa.me/${settings.whatsapp_number.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary transition-colors"><i className="fa-brands fa-whatsapp text-xl"></i></a>}
+                </div>
+              )}
             </footer>
 
             <ProductModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={editingProduct ? handleUpdateProduct : handleAddProduct} productToEdit={editingProduct} />
