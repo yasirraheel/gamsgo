@@ -450,17 +450,30 @@
           }
         }, []);
 
+        const loadProducts = async () => {
+          setIsLoading(true);
+          try {
+            const res = await fetch('products.php?action=list');
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              setProducts(data);
+            }
+          } catch (err) {
+            console.warn('Failed to load products', err);
+            setProducts(DEFAULT_PRODUCTS);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
         useEffect(() => {
           const urlParams = new URLSearchParams(window.location.search);
           const id = urlParams.get('storeId');
           const localCart = window.localStorage.getItem('digimarket_cart');
           if (localCart) setCart(JSON.parse(localCart));
-          if (id) { setStoreId(id); loadStore(id); }
-          else {
-            const localProducts = window.localStorage.getItem('digimarket_products');
-            if (localProducts) setProducts(JSON.parse(localProducts));
-          }
+          setStoreId(id);
           fetchCurrentUser();
+          loadProducts();
         }, [fetchCurrentUser]);
 
         useEffect(() => {
@@ -534,10 +547,56 @@
           addToast('Logged out', 'info');
         };
 
-        const handleAddProduct = (newProduct) => { const updated = [newProduct, ...products]; setProducts(updated); if (storeId) syncToCloud(updated); };
-        const handleUpdateProduct = (updatedProduct) => { const updated = products.map(p => p.id === updatedProduct.id ? updatedProduct : p); setProducts(updated); if (storeId) syncToCloud(updated); };
-        const handleDeleteProduct = (id) => { const updated = products.filter(p => p.id !== id); setProducts(updated); if (storeId) syncToCloud(updated); };
-        const handleToggleVisible = (id) => { const updated = products.map(p => p.id === id ? { ...p, isVisible: !p.isVisible } : p); setProducts(updated); if (storeId) syncToCloud(updated); };
+        const handleAddProduct = async (newProduct) => {
+          try {
+            const res = await fetch('products.php?action=create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newProduct)
+            });
+            if (!res.ok) throw new Error('Failed to create product');
+            addToast('Product created', 'success');
+            loadProducts();
+          } catch (err) {
+            addToast('Failed to create product', 'error');
+          }
+        };
+
+        const handleUpdateProduct = async (updatedProduct) => {
+          try {
+            const res = await fetch('products.php?action=update', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updatedProduct)
+            });
+            if (!res.ok) throw new Error('Failed to update product');
+            addToast('Product updated', 'success');
+            loadProducts();
+          } catch (err) {
+            addToast('Failed to update product', 'error');
+          }
+        };
+
+        const handleDeleteProduct = async (id) => {
+          try {
+            const res = await fetch(`products.php?action=delete&id=${id}`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to delete product');
+            addToast('Product deleted', 'success');
+            loadProducts();
+          } catch (err) {
+            addToast('Failed to delete product', 'error');
+          }
+        };
+
+        const handleToggleVisible = async (id) => {
+          try {
+            const res = await fetch(`products.php?action=toggle_visible&id=${id}`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to toggle visibility');
+            loadProducts();
+          } catch (err) {
+            addToast('Failed to toggle visibility', 'error');
+          }
+        };
         const addToCart = (product) => { setCart([...cart, { ...product, cartId: Math.random().toString(36) }]); setIsCartOpen(true); addToast(`Added ${product.name} to cart`, 'success'); };
         const removeFromCart = (cartId) => setCart(cart.filter(item => item.cartId !== cartId));
         const openEditModal = (product) => { setEditingProduct(product); setIsModalOpen(true); };
