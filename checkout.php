@@ -66,7 +66,7 @@
           .then(res => res.json())
           .then(data => {
             const active = Array.isArray(data) ? data.filter(g => g.is_active == 1) : [];
-            setGateways(active);
+            setPaymentGateways(active);
             if (active.length > 0) setSelectedGateway(active[0]);
           })
           .catch(err => console.error('Failed to load gateways', err));
@@ -216,11 +216,11 @@
                   <div className="bg-gray-800 rounded-lg p-6">
                     <h2 className="text-2xl font-bold mb-4">Payment Method</h2>
                     
-                    {gateways.length === 0 ? (
+                    {paymentGateways.length === 0 ? (
                       <p className="text-gray-400">No payment methods available</p>
                     ) : (
                       <div className="space-y-3">
-                        {gateways.map((gateway) => (
+                        {paymentGateways.map((gateway) => (
                           <div
                             key={gateway.id}
                             onClick={() => setSelectedGateway(gateway)}
@@ -277,8 +277,8 @@
 
                   <button
                     type="submit"
-                    disabled={isSubmitting || gateways.length === 0}
-                    className="w-full bg-primary hover:bg-blue-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-medium transition-colors text-lg"
+                    disabled={isSubmitting || paymentGateways.length === 0}
+                    className="w-full bg-primary hover:bg-blue-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-6 rounded-lg font-medium transition-colors text-lg">
                   >
                     {isSubmitting ? (
                       <>
