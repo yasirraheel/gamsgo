@@ -37,6 +37,7 @@ function ensureSchema() {
         icon VARCHAR(100),
         stock INT DEFAULT 0,
         is_visible BOOLEAN DEFAULT 1,
+        validity_months INT DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
@@ -96,7 +97,7 @@ if ($action === 'create') {
     $id = $data['id'] ?? uniqid('prod_', true);
     $features = json_encode($data['features'] ?? []);
     
-    $stmt = $pdo->prepare("INSERT INTO products (id, name, service_type, account_type, original_price, discounted_price, description, features, requirements, is_hot, icon, stock, is_visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO products (id, name, service_type, account_type, original_price, discounted_price, description, features, requirements, is_hot, icon, stock, is_visible, validity_months) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     
     $stmt->execute([
         $id,
@@ -111,7 +112,8 @@ if ($action === 'create') {
         $data['isHot'] ?? false,
         $data['icon'] ?? 'fa-box',
         $data['stock'] ?? 0,
-        $data['isVisible'] ?? true
+        $data['isVisible'] ?? true,
+        $data['validityMonths'] ?? 1
     ]);
     
     respond(['success' => true, 'id' => $id]);
@@ -128,7 +130,7 @@ if ($action === 'update') {
     
     $features = json_encode($data['features'] ?? []);
     
-    $stmt = $pdo->prepare("UPDATE products SET name=?, service_type=?, account_type=?, original_price=?, discounted_price=?, description=?, features=?, requirements=?, is_hot=?, icon=?, stock=?, is_visible=? WHERE id=?");
+    $stmt = $pdo->prepare("UPDATE products SET name=?, service_type=?, account_type=?, original_price=?, discounted_price=?, description=?, features=?, requirements=?, is_hot=?, icon=?, stock=?, is_visible=?, validity_months=? WHERE id=?");
     
     $stmt->execute([
         $data['name'],
@@ -143,6 +145,7 @@ if ($action === 'update') {
         $data['icon'] ?? 'fa-box',
         $data['stock'] ?? 0,
         $data['isVisible'] ?? true,
+        $data['validityMonths'] ?? 1,
         $data['id']
     ]);
     

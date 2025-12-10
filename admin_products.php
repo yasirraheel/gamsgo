@@ -149,7 +149,8 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
         isHot: false,
         icon: 'fa-box',
         stock: 10,
-        isVisible: true
+        isVisible: true,
+        validityMonths: 1
       });
       const [featureInput, setFeatureInput] = useState('');
 
@@ -168,7 +169,8 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             isHot: productToEdit.isHot || productToEdit.is_hot == 1,
             icon: productToEdit.icon || 'fa-box',
             stock: productToEdit.stock || 0,
-            isVisible: productToEdit.isVisible || productToEdit.is_visible == 1
+            isVisible: productToEdit.isVisible || productToEdit.is_visible == 1,
+            validityMonths: productToEdit.validityMonths || productToEdit.validity_months || 1
           });
         } else {
           setFormData({
@@ -183,7 +185,8 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
             isHot: false,
             icon: 'fa-box',
             stock: 10,
-            isVisible: true
+            isVisible: true,
+            validityMonths: 1
           });
         }
       }, [productToEdit, isOpen]);
@@ -207,7 +210,8 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
           isHot: formData.isHot ? 1 : 0,
           icon: formData.icon || 'fa-box',
           stock: Number(formData.stock) || 0,
-          isVisible: formData.isVisible ? 1 : 0
+          isVisible: formData.isVisible ? 1 : 0,
+          validityMonths: Number(formData.validityMonths) || 1
         });
         onClose();
         setFeatureInput('');
@@ -327,6 +331,19 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                       value={formData.stock}
                       onChange={e => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
                     />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Validity Period</label>
+                    <select
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-colors"
+                      value={formData.validityMonths}
+                      onChange={e => setFormData({ ...formData, validityMonths: parseInt(e.target.value) })}
+                    >
+                      <option value="1">1 Month</option>
+                      <option value="3">3 Months</option>
+                      <option value="6">6 Months</option>
+                      <option value="12">12 Months</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-400 mb-1">Short Description</label>
