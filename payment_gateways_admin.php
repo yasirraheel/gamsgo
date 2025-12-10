@@ -432,10 +432,10 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
 
       const loadUser = async () => {
         try {
-          const res = await fetch('auth.php?action=status');
+          const res = await fetch('auth.php?action=me');
           const data = await res.json();
-          if (data.authenticated) {
-            setCurrentUser(data.user);
+          if (data.email) {
+            setCurrentUser(data);
           }
         } catch (err) {
           console.error('Failed to load user', err);
