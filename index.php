@@ -230,6 +230,8 @@ $faviconUrl = $settings['favicon_url'] ?? '';
 
       const ProductCard = ({ product, isAdmin, onEdit, onDelete, onToggleVisible, onAddToCart }) => {
         const discountPercent = Math.round(((product.originalPrice - product.discountedPrice) / product.originalPrice) * 100);
+        const [showFullDesc, setShowFullDesc] = useState(false);
+        const [showAllFeatures, setShowAllFeatures] = useState(false);
         if (!product.isVisible && !isAdmin) return null;
         return (
           <div className={`glass-panel rounded-2xl p-5 hover:scale-[1.02] transition-transform duration-300 relative group overflow-hidden flex flex-col h-full ${!product.isVisible ? 'opacity-75 grayscale' : ''}`}>
@@ -255,13 +257,30 @@ $faviconUrl = $settings['favicon_url'] ?? '';
                 <Badge type={product.accountType} />
               </div>
             </div>
-            <p className="text-gray-400 text-sm mb-4 line-clamp-2 min-h-[40px] relative z-10">{product.description}</p>
+            <div className="relative z-10 mb-4">
+              <p className={`text-gray-400 text-sm ${!showFullDesc ? 'line-clamp-2' : ''}`}>{product.description}</p>
+              {product.description && product.description.length > 100 && (
+                <button 
+                  onClick={() => setShowFullDesc(!showFullDesc)}
+                  className="text-primary text-xs hover:text-blue-400 mt-1 transition-colors"
+                >
+                  {showFullDesc ? 'Show less' : 'Read more'}
+                </button>
+              )}
+            </div>
             <div className="mb-6 flex-grow relative z-10">
               <div className="space-y-2">
-                {product.features.slice(0, 3).map((feature, idx) => (
+                {(showAllFeatures ? product.features : product.features.slice(0, 3)).map((feature, idx) => (
                   <div key={idx} className="flex items-center text-xs text-gray-300"><i className="fa-solid fa-check text-green-400 mr-2"></i>{feature}</div>
                 ))}
-                {product.features.length > 3 && <div className="text-xs text-gray-500 pl-5">+{product.features.length - 3} more features</div>}
+                {product.features.length > 3 && (
+                  <button
+                    onClick={() => setShowAllFeatures(!showAllFeatures)}
+                    className="text-xs text-primary hover:text-blue-400 pl-5 transition-colors"
+                  >
+                    {showAllFeatures ? 'Show less' : `+${product.features.length - 3} more features`}
+                  </button>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2 mb-4">
