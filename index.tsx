@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // --- Types ---
@@ -22,6 +22,16 @@ interface Product {
 interface CartItem extends Product {
   cartId: string;
 }
+
+interface StoreData {
+  name: string;
+  products: Product[];
+  lastUpdated: number;
+}
+
+// --- Constants ---
+const CLOUD_API_URL = 'https://jsonblob.com/api/jsonBlob';
+const SYNC_INTERVAL = 10000; // Poll every 10 seconds
 
 // --- Initial Data ---
 const DEFAULT_PRODUCTS: Product[] = [
@@ -102,21 +112,80 @@ const DEFAULT_PRODUCTS: Product[] = [
   },
 ];
 
-// --- Hooks ---
-const useStickyState = <T,>(defaultValue: T, key: string): [T, React.Dispatch<React.SetStateAction<T>>] => {
-  const [value, setValue] = useState<T>(() => {
-    const stickyValue = window.localStorage.getItem(key);
-    return stickyValue !== null ? JSON.parse(stickyValue) : defaultValue;
-  });
+// --- Services ---
+const CloudService = {
+  createStore: async (data: StoreData): Promise<string> => {
+    try {
+      const response = await fetch(CLOUD_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      
+      const location = response.headers.get('Location');
+      if (!location) throw new Error('No location header returned');
+      
+      // Extract ID from location URL
+      const parts = location.split('/');
+      return parts[parts.length - 1];
+    } catch (error) {
+      console.error('Failed to create store:', error);
+      throw error;
+    }
+  },
 
-  useEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value]);
+  getStore: async (id: string): Promise<StoreData> => {
+    try {
+      const response = await fetch(`${CLOUD_API_URL}/${id}`);
+      if (!response.ok) throw new Error('Store not found');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch store:', error);
+      throw error;
+    }
+  },
 
-  return [value, setValue];
+  updateStore: async (id: string, data: StoreData): Promise<void> => {
+    try {
+      await fetch(`${CLOUD_API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+    } catch (error) {
+      console.error('Failed to update store:', error);
+      throw error;
+    }
+  }
 };
 
 // --- Components ---
+
+const Toast = ({ message, type, onClose }: { message: string, type: 'success' | 'error' | 'info', onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const colors = {
+    success: 'bg-green-500/10 border-green-500/20 text-green-400',
+    error: 'bg-red-500/10 border-red-500/20 text-red-400',
+    info: 'bg-blue-500/10 border-blue-500/20 text-blue-400'
+  };
+
+  return (
+    <div className={`fixed bottom-4 right-4 ${colors[type]} border p-4 rounded-xl backdrop-blur-md shadow-xl flex items-center gap-3 z-50 animate-bounce-in`}>
+      <i className={`fa-solid ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-info-circle'}`}></i>
+      <span className="font-medium text-sm">{message}</span>
+    </div>
+  );
+};
 
 const Badge = ({ type }: { type: 'Private' | 'Shared' | 'Hot' | 'Stock' | 'Hidden' }) => {
   const styles: Record<string, string> = {
@@ -622,45 +691,159 @@ const CartDrawer = ({ isOpen, onClose, cart, onRemove }: { isOpen: boolean, onCl
 }
 
 const App = () => {
-  const [products, setProducts] = useStickyState<Product[]>(DEFAULT_PRODUCTS, 'digimarket_products');
-  const [cart, setCart] = useStickyState<CartItem[]>([], 'digimarket_cart');
+  // State
+  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
+  const [storeId, setStoreId] = useState<string | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  
+  // UI State
   const [filter, setFilter] = useState<'All' | 'Private' | 'Shared'>('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [isAdmin, setIsAdmin] = useStickyState<boolean>(false, 'digimarket_is_admin');
+  const [toasts, setToasts] = useState<Array<{id: number, message: string, type: 'success' | 'error' | 'info'}>>([]);
 
-  // Stats for Admin
-  const totalStock = products.reduce((acc, p) => acc + p.stock, 0);
-  const totalValue = products.reduce((acc, p) => acc + (p.stock * p.discountedPrice), 0);
+  // Initialization
+  useEffect(() => {
+    // Check URL for store ID
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('storeId');
+    const localAdmin = window.localStorage.getItem('digimarket_is_admin') === 'true';
+    setIsAdmin(localAdmin);
+    
+    // Load local cart
+    const localCart = window.localStorage.getItem('digimarket_cart');
+    if (localCart) setCart(JSON.parse(localCart));
 
-  const filteredProducts = products.filter(p => {
-    const matchesFilter = filter === 'All' || p.accountType === filter;
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          p.serviceType.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+    if (id) {
+      setStoreId(id);
+      loadStore(id);
+    } else {
+       // Load local products if available, else default
+       const localProducts = window.localStorage.getItem('digimarket_products');
+       if (localProducts) setProducts(JSON.parse(localProducts));
+    }
+  }, []);
 
+  // Sync Interval
+  useEffect(() => {
+    if (!storeId) return;
+    const interval = setInterval(() => {
+        loadStore(storeId, true); // Silent sync
+    }, SYNC_INTERVAL);
+    return () => clearInterval(interval);
+  }, [storeId]);
+
+  // Persist Local State (Cart only, Products are managed via Cloud or Local Products Key)
+  useEffect(() => {
+      window.localStorage.setItem('digimarket_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // Local Products persistence (fallback)
+  useEffect(() => {
+      if (!storeId) {
+          window.localStorage.setItem('digimarket_products', JSON.stringify(products));
+      }
+  }, [products, storeId]);
+
+  useEffect(() => {
+      window.localStorage.setItem('digimarket_is_admin', String(isAdmin));
+  }, [isAdmin]);
+
+  // Helpers
+  const addToast = (message: string, type: 'success' | 'error' | 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  const loadStore = async (id: string, silent = false) => {
+    if (!silent) setIsLoading(true);
+    try {
+      const data = await CloudService.getStore(id);
+      setProducts(data.products);
+      if (!silent) addToast('Store loaded from cloud', 'success');
+    } catch (err) {
+      addToast('Failed to load store data', 'error');
+    } finally {
+      if (!silent) setIsLoading(false);
+    }
+  };
+
+  const syncToCloud = async (newProducts: Product[]) => {
+      if (!storeId) return;
+      setIsSyncing(true);
+      try {
+          await CloudService.updateStore(storeId, {
+              name: 'My Digital Store',
+              products: newProducts,
+              lastUpdated: Date.now()
+          });
+          // addToast('Changes synced to cloud', 'success');
+      } catch (err) {
+          addToast('Sync failed', 'error');
+      } finally {
+          setIsSyncing(false);
+      }
+  };
+
+  const createCloudStore = async () => {
+      setIsLoading(true);
+      try {
+          const id = await CloudService.createStore({
+              name: 'My New Digital Store',
+              products: products,
+              lastUpdated: Date.now()
+          });
+          setStoreId(id);
+          // Update URL without reload
+          const url = new URL(window.location.href);
+          url.searchParams.set('storeId', id);
+          window.history.pushState({}, '', url);
+          addToast('Global Store Created! You are now live.', 'success');
+      } catch (err) {
+          addToast('Failed to go live', 'error');
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  // Handlers
   const handleAddProduct = (newProduct: Product) => {
-    setProducts([newProduct, ...products]);
+    const updated = [newProduct, ...products];
+    setProducts(updated);
+    if (storeId) syncToCloud(updated);
   };
 
   const handleUpdateProduct = (updatedProduct: Product) => {
-    setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+    const updated = products.map(p => p.id === updatedProduct.id ? updatedProduct : p);
+    setProducts(updated);
+    if (storeId) syncToCloud(updated);
   };
 
   const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter(p => p.id !== id));
+    const updated = products.filter(p => p.id !== id);
+    setProducts(updated);
+    if (storeId) syncToCloud(updated);
   };
 
   const handleToggleVisible = (id: string) => {
-      setProducts(products.map(p => p.id === id ? { ...p, isVisible: !p.isVisible } : p));
+      const updated = products.map(p => p.id === id ? { ...p, isVisible: !p.isVisible } : p);
+      setProducts(updated);
+      if (storeId) syncToCloud(updated);
   };
 
   const addToCart = (product: Product) => {
       setCart([...cart, { ...product, cartId: Math.random().toString(36) }]);
       setIsCartOpen(true);
+      addToast(`Added ${product.name} to cart`, 'success');
   };
 
   const removeFromCart = (cartId: string) => {
@@ -677,8 +860,31 @@ const App = () => {
       setIsModalOpen(true);
   }
 
+  const copyStoreLink = () => {
+      navigator.clipboard.writeText(window.location.href);
+      addToast('Store link copied to clipboard!', 'success');
+  }
+
+  // Derived State
+  const filteredProducts = products.filter(p => {
+    const matchesFilter = filter === 'All' || p.accountType === filter;
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          p.serviceType.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
+  const totalStock = products.reduce((acc, p) => acc + p.stock, 0);
+  const totalValue = products.reduce((acc, p) => acc + (p.stock * p.discountedPrice), 0);
+
   return (
     <div className={`min-h-screen pb-20 transition-colors duration-500 ${isAdmin ? 'border-t-4 border-red-500' : ''}`}>
+      {/* Toast Container */}
+      <div className="fixed bottom-0 right-0 p-4 z-50 flex flex-col gap-2">
+          {toasts.map(t => (
+              <Toast key={t.id} message={t.message} type={t.type} onClose={() => removeToast(t.id)} />
+          ))}
+      </div>
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-40 glass-panel border-b-0 border-b-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -687,7 +893,18 @@ const App = () => {
               {isAdmin ? <i className="fa-solid fa-lock-open text-xs"></i> : 'D'}
             </div>
             <span className="font-bold text-xl tracking-tight text-white">Digi<span className={isAdmin ? 'text-red-500' : 'text-primary'}>Market</span></span>
-            {isAdmin && <span className="text-[10px] bg-red-500/20 text-red-500 border border-red-500/20 px-1.5 rounded ml-2 font-mono">ADMIN MODE</span>}
+            {storeId ? (
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] uppercase font-bold tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Live Global
+                </span>
+            ) : (
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-gray-500/10 border border-gray-500/20 text-gray-400 text-[10px] uppercase font-bold tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                    Local Mode
+                </span>
+            )}
+            {isSyncing && <i className="fa-solid fa-arrows-rotate fa-spin text-gray-400 text-xs ml-2"></i>}
           </div>
           
           <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-400">
@@ -744,8 +961,22 @@ const App = () => {
                     <div className="text-2xl font-bold text-white">${totalValue.toFixed(2)}</div>
                 </div>
                  <div className="glass-panel p-4 rounded-xl border border-red-500/20 bg-red-500/5">
-                    <div className="text-gray-400 text-xs uppercase tracking-wider mb-1">Hidden Items</div>
-                    <div className="text-2xl font-bold text-white">{products.filter(p => !p.isVisible).length}</div>
+                     {storeId ? (
+                        <div className="flex flex-col h-full justify-center gap-1 cursor-pointer" onClick={copyStoreLink}>
+                            <div className="text-emerald-400 text-xs uppercase tracking-wider mb-1 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                Online Global
+                            </div>
+                            <div className="text-sm font-bold text-white truncate underline decoration-dotted">
+                                Click to Copy Link
+                            </div>
+                        </div>
+                     ) : (
+                        <div onClick={createCloudStore} className="flex flex-col items-center justify-center h-full text-blue-400 gap-1 cursor-pointer hover:text-blue-300">
+                             <i className="fa-solid fa-globe text-xl"></i>
+                             <span className="font-bold text-sm">Go Live Globally</span>
+                        </div>
+                     )}
                 </div>
                 <div className="glass-panel p-4 rounded-xl border border-red-500/20 bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors" onClick={openAddModal}>
                      <div className="flex flex-col items-center justify-center h-full text-red-400 gap-2">
@@ -829,22 +1060,34 @@ const App = () => {
           </div>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map(product => (
-            <ProductCard 
-                key={product.id} 
-                product={product} 
-                isAdmin={isAdmin}
-                onEdit={openEditModal}
-                onDelete={handleDeleteProduct}
-                onToggleVisible={handleToggleVisible}
-                onAddToCart={addToCart}
-            />
-          ))}
-        </div>
+        {/* Loading State */}
+        {isLoading && (
+            <div className="flex justify-center items-center py-20">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <div className="text-gray-400 animate-pulse">Loading Global Store...</div>
+                </div>
+            </div>
+        )}
 
-        {filteredProducts.length === 0 && (
+        {/* Grid */}
+        {!isLoading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map(product => (
+                <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    isAdmin={isAdmin}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteProduct}
+                    onToggleVisible={handleToggleVisible}
+                    onAddToCart={addToCart}
+                />
+            ))}
+            </div>
+        )}
+
+        {!isLoading && filteredProducts.length === 0 && (
           <div className="text-center py-20 text-gray-500">
             <i className="fa-solid fa-ghost text-4xl mb-4 opacity-50"></i>
             <p>No products found matching your criteria.</p>
