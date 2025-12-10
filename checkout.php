@@ -45,9 +45,6 @@
       const [cart, setCart] = useState([]);
       const [gateways, setGateways] = useState([]);
       const [selectedGateway, setSelectedGateway] = useState(null);
-      const [country, setCountry] = useState('');
-      const [city, setCity] = useState('');
-      const [postalCode, setPostalCode] = useState('');
       const [isSubmitting, setIsSubmitting] = useState(false);
       const [toast, setToast] = useState(null);
       const [settings, setSettings] = useState(null);
@@ -127,10 +124,7 @@
           const orderData = {
             products: cart,
             total_amount: calculateTotal().toFixed(2),
-            payment_gateway_id: selectedGateway.id,
-            country,
-            city,
-            postal_code: postalCode
+            payment_gateway_id: selectedGateway.id
           };
 
           const res = await fetch('orders.php?action=create', {
@@ -212,49 +206,6 @@
               {/* Checkout Form */}
               <div>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Address Section */}
-                  <div className="bg-gray-800 rounded-lg p-6">
-                    <h2 className="text-2xl font-bold mb-4">Shipping Address</h2>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Country *</label>
-                        <input
-                          type="text"
-                          required
-                          value={country}
-                          onChange={(e) => setCountry(e.target.value)}
-                          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary"
-                          placeholder="Enter your country"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium mb-2">City *</label>
-                        <input
-                          type="text"
-                          required
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary"
-                          placeholder="Enter your city"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Postal Code *</label>
-                        <input
-                          type="text"
-                          required
-                          value={postalCode}
-                          onChange={(e) => setPostalCode(e.target.value)}
-                          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary"
-                          placeholder="Enter postal code"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Payment Method Section */}
                   <div className="bg-gray-800 rounded-lg p-6">
                     <h2 className="text-2xl font-bold mb-4">Payment Method</h2>
