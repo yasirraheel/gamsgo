@@ -331,7 +331,7 @@
         );
       };
 
-      const CartDrawer = ({ isOpen, onClose, cart, onRemove }) => {
+      const CartDrawer = ({ isOpen, onClose, cart, onRemove, currentUser, settings, setAuthMode, setIsAuthModalOpen }) => {
         const total = cart.reduce((sum, item) => sum + item.discountedPrice, 0);
         return (
           <>
@@ -796,7 +796,7 @@
             </footer>
 
             <ProductModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={editingProduct ? handleUpdateProduct : handleAddProduct} productToEdit={editingProduct} />
-            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} onRemove={removeFromCart} />
+            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} onRemove={removeFromCart} currentUser={currentUser} settings={settings} setAuthMode={setAuthMode} setIsAuthModalOpen={setIsAuthModalOpen} />
             <AuthModal isOpen={isAuthModalOpen} mode={authMode} onClose={() => setIsAuthModalOpen(false)} onSubmit={handleAuthSubmit} setMode={setAuthMode} email={authEmail} setEmail={setAuthEmail} password={authPassword} setPassword={setAuthPassword} role={authRole} setRole={setAuthRole} loading={authLoading} error={authError} />
           </div>
         );
