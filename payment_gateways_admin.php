@@ -311,15 +311,15 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
       };
 
       return (
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-8">
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Payment Gateways</h1>
-              <p className="text-gray-400">Manage payment methods for your marketplace</p>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Payment Gateways</h1>
+              <p className="text-sm sm:text-base text-gray-400">Manage payment methods for your marketplace</p>
             </div>
             <button
               onClick={() => { setEditingGateway(null); setIsModalOpen(true); }}
-              className="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+              className="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap w-full sm:w-auto"
             >
               <i className="fas fa-plus mr-2"></i>Add Gateway
             </button>

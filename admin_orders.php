@@ -421,12 +421,10 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
       const pendingCount = orders.filter(o => o.status === 'pending').length;
 
       return (
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Orders Management</h1>
-              <p className="text-gray-400">Manage customer orders and approvals</p>
-            </div>
+        <div className="p-4 sm:p-6">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Orders Management</h1>
+            <p className="text-sm sm:text-base text-gray-400">Manage customer orders and approvals</p>
           </div>
 
             {/* Filter Tabs */}

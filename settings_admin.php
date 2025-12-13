@@ -95,10 +95,10 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
         }
 
         return (
-          <div className="p-6">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-white mb-2">Site Settings</h1>
-              <p className="text-gray-400">Configure your marketplace settings and integrations</p>
+          <div className="p-4 sm:p-6">
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Site Settings</h1>
+              <p className="text-sm sm:text-base text-gray-400">Configure your marketplace settings and integrations</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
