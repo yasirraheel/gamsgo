@@ -479,83 +479,157 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 </p>
               </div>
             ) : (
-              <div className="bg-gray-800 rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-700">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Order ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Customer</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Products</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {orders.map((order) => (
-                      <tr key={order.id} className="hover:bg-gray-750">
-                        <td className="px-6 py-4 font-medium">#{order.id}</td>
-                        <td className="px-6 py-4 text-sm">{order.user_email}</td>
-                        <td className="px-6 py-4 text-sm">
-                          <div className="flex flex-wrap gap-1">
-                            {order.products.slice(0, 2).map((p, i) => (
-                              <span key={i} className="bg-gray-700 px-2 py-1 rounded text-xs">{p.name}</span>
-                            ))}
-                            {order.products.length > 2 && (
-                              <span className="text-gray-400 text-xs">+{order.products.length - 2} more</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-primary">{currency}{parseFloat(order.total_amount).toFixed(2)}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)} inline-flex items-center gap-1`}>
-                            <i className={`fas ${getStatusIcon(order.status)}`}></i>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">{new Date(order.created_at).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 text-right text-sm">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => setSelectedOrder(order)}
-                              className="text-blue-400 hover:text-blue-300 p-2"
-                              title="View Details"
-                            >
-                              <i className="fas fa-eye"></i>
-                            </button>
-                            {order.status === 'pending' && (
-                              <>
-                                <button
-                                  onClick={() => setApproveOrder(order)}
-                                  className="text-green-400 hover:text-green-300 p-2"
-                                  title="Approve"
-                                >
-                                  <i className="fas fa-check"></i>
-                                </button>
-                                <button
-                                  onClick={() => setRejectOrder(order)}
-                                  className="text-red-400 hover:text-red-300 p-2"
-                                  title="Reject"
-                                >
-                                  <i className="fas fa-times"></i>
-                                </button>
-                              </>
-                            )}
-                            <button
-                              onClick={() => handleDelete(order.id)}
-                              className="text-red-400 hover:text-red-300 p-2"
-                              title="Delete"
-                            >
-                              <i className="fas fa-trash"></i>
-                            </button>
-                          </div>
-                        </td>
+              <>
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {orders.map((order) => (
+                    <div key={order.id} className="bg-gray-800 rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-bold text-lg">#{order.id}</div>
+                          <div className="text-sm text-gray-400">{order.user_email}</div>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)} inline-flex items-center gap-1`}>
+                          <i className={`fas ${getStatusIcon(order.status)}`}></i>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                      </div>
+
+                      <div>
+                        <div className="text-xs text-gray-400 mb-1">Products:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {order.products.slice(0, 2).map((p, i) => (
+                            <span key={i} className="bg-gray-700 px-2 py-1 rounded text-xs">{p.name}</span>
+                          ))}
+                          {order.products.length > 2 && (
+                            <span className="text-gray-400 text-xs">+{order.products.length - 2} more</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-700">
+                        <div>
+                          <div className="font-bold text-primary text-lg">{currency}{parseFloat(order.total_amount).toFixed(2)}</div>
+                          <div className="text-xs text-gray-400">{new Date(order.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="text-blue-400 hover:text-blue-300 p-2"
+                            title="View Details"
+                          >
+                            <i className="fas fa-eye"></i>
+                          </button>
+                          {order.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => setApproveOrder(order)}
+                                className="text-green-400 hover:text-green-300 p-2"
+                                title="Approve"
+                              >
+                                <i className="fas fa-check"></i>
+                              </button>
+                              <button
+                                onClick={() => setRejectOrder(order)}
+                                className="text-red-400 hover:text-red-300 p-2"
+                                title="Reject"
+                              >
+                                <i className="fas fa-times"></i>
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={() => handleDelete(order.id)}
+                            className="text-red-400 hover:text-red-300 p-2"
+                            title="Delete"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden lg:block bg-gray-800 rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Order ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Customer</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Products</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-700">
+                      {orders.map((order) => (
+                        <tr key={order.id} className="hover:bg-gray-750">
+                          <td className="px-6 py-4 font-medium">#{order.id}</td>
+                          <td className="px-6 py-4 text-sm">{order.user_email}</td>
+                          <td className="px-6 py-4 text-sm">
+                            <div className="flex flex-wrap gap-1">
+                              {order.products.slice(0, 2).map((p, i) => (
+                                <span key={i} className="bg-gray-700 px-2 py-1 rounded text-xs">{p.name}</span>
+                              ))}
+                              {order.products.length > 2 && (
+                                <span className="text-gray-400 text-xs">+{order.products.length - 2} more</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 font-semibold text-primary">{currency}{parseFloat(order.total_amount).toFixed(2)}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)} inline-flex items-center gap-1`}>
+                              <i className={`fas ${getStatusIcon(order.status)}`}></i>
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-400">{new Date(order.created_at).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 text-right text-sm">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => setSelectedOrder(order)}
+                                className="text-blue-400 hover:text-blue-300 p-2"
+                                title="View Details"
+                              >
+                                <i className="fas fa-eye"></i>
+                              </button>
+                              {order.status === 'pending' && (
+                                <>
+                                  <button
+                                    onClick={() => setApproveOrder(order)}
+                                    className="text-green-400 hover:text-green-300 p-2"
+                                    title="Approve"
+                                  >
+                                    <i className="fas fa-check"></i>
+                                  </button>
+                                  <button
+                                    onClick={() => setRejectOrder(order)}
+                                    className="text-red-400 hover:text-red-300 p-2"
+                                    title="Reject"
+                                  >
+                                    <i className="fas fa-times"></i>
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                onClick={() => handleDelete(order.id)}
+                                className="text-red-400 hover:text-red-300 p-2"
+                                title="Delete"
+                              >
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
 
           {approveOrder && (

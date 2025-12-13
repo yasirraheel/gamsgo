@@ -47,6 +47,7 @@ function ensureSchema() {
         maintenance_mode BOOLEAN DEFAULT 0,
         google_analytics_id VARCHAR(100),
         facebook_pixel_id VARCHAR(100),
+        custom_analytics_code TEXT,
         terms_url VARCHAR(500),
         privacy_url VARCHAR(500),
         refund_policy_url VARCHAR(500),
@@ -54,7 +55,15 @@ function ensureSchema() {
         CHECK (id = 1)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
     
-    db()->exec($sql);
+    $pdo = db();
+    $pdo->exec($sql);
+    
+    // Add custom_analytics_code column if it doesn't exist (for existing tables)
+    try {
+        $pdo->exec("ALTER TABLE settings ADD COLUMN custom_analytics_code TEXT");
+    } catch (PDOException $e) {
+        // Column already exists, ignore error
+    }
     
     // Insert default settings if not exists
     $pdo = db();
@@ -116,8 +125,8 @@ if ($action === 'update') {
         'linkedin_url', 'youtube_url', 'meta_title', 'meta_description',
         'meta_keywords', 'og_image_url', 'favicon_url', 'logo_url',
         'support_email', 'currency_symbol', 'timezone', 'maintenance_mode',
-        'google_analytics_id', 'facebook_pixel_id', 'terms_url',
-        'privacy_url', 'refund_policy_url'
+        'google_analytics_id', 'facebook_pixel_id', 'custom_analytics_code',
+        'terms_url', 'privacy_url', 'refund_policy_url'
     ];
     
     $updates = [];

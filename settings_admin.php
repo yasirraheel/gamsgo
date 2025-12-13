@@ -233,7 +233,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i className="fa-solid fa-chart-line text-primary"></i> Analytics & Tracking
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="block text-xs font-medium text-gray-400 mb-1">Google Analytics ID</label>
                         <input type="text" name="google_analytics_id" defaultValue={settings.google_analytics_id || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="G-XXXXXXXXXX" />
@@ -242,6 +242,17 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                         <label className="block text-xs font-medium text-gray-400 mb-1">Facebook Pixel ID</label>
                         <input type="text" name="facebook_pixel_id" defaultValue={settings.facebook_pixel_id || ""} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary" placeholder="123456789012345" />
                     </div>
+                </div>
+                <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1">Custom Analytics Code (Header)</label>
+                    <textarea 
+                        name="custom_analytics_code" 
+                        defaultValue={settings.custom_analytics_code || ""} 
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-primary font-mono text-sm" 
+                        rows="6"
+                        placeholder="<script>&#10;  // Add your custom analytics, tracking, or third-party scripts here&#10;</script>"
+                    ></textarea>
+                    <p className="text-xs text-gray-500 mt-1">This code will be inserted in the {'<head>'} section of all pages. Perfect for custom analytics, tag managers, or conversion tracking pixels.</p>
                 </div>
             </div>
 

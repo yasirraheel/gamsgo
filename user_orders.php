@@ -1,3 +1,16 @@
+<?php
+session_start();
+// Load settings for analytics codes
+try {
+  $db = new PDO('mysql:host=localhost;dbname=u559276167_gamsgo', 'u559276167_gamsgo', 'Gamsgo@123');
+  $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+  
+  $stmt = $db->query("SELECT * FROM settings LIMIT 1");
+  $dbSettings = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+  $dbSettings = [];
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,6 +31,42 @@
       }
     }
   </script>
+  
+  <?php if (!empty($dbSettings['google_analytics_id'])): ?>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo htmlspecialchars($dbSettings['google_analytics_id']); ?>"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '<?php echo htmlspecialchars($dbSettings['google_analytics_id']); ?>');
+  </script>
+  <?php endif; ?>
+  
+  <?php if (!empty($dbSettings['facebook_pixel_id'])): ?>
+  <!-- Facebook Pixel -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '<?php echo htmlspecialchars($dbSettings['facebook_pixel_id']); ?>');
+    fbq('track', 'PageView');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none" 
+         src="https://www.facebook.com/tr?id=<?php echo htmlspecialchars($dbSettings['facebook_pixel_id']); ?>&ev=PageView&noscript=1" />
+  </noscript>
+  <?php endif; ?>
+  
+  <?php if (!empty($dbSettings['custom_analytics_code'])): ?>
+  <!-- Custom Analytics Code -->
+  <?php echo $dbSettings['custom_analytics_code']; ?>
+  <?php endif; ?>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
   <div id="root"></div>

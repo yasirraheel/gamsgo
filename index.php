@@ -117,6 +117,11 @@ $faviconUrl = $settings['favicon_url'] ?? '';
     </noscript>
     <?php endif; ?>
     
+    <?php if (!empty($settings['custom_analytics_code'])): ?>
+    <!-- Custom Analytics Code -->
+    <?php echo $settings['custom_analytics_code']; ?>
+    <?php endif; ?>
+    
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>

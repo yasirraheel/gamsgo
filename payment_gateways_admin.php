@@ -329,28 +329,92 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
               <div className="text-center py-12">
                 <i className="fas fa-spinner fa-spin text-4xl text-primary"></i>
               </div>
+            ) : gateways.length === 0 ? (
+              <div className="bg-gray-800 rounded-lg p-12 text-center">
+                <i className="fas fa-wallet text-6xl text-gray-700 mb-4"></i>
+                <h2 className="text-2xl font-bold mb-2">No Payment Gateways</h2>
+                <p className="text-gray-400">Add your first gateway to get started.</p>
+              </div>
             ) : (
-              <div className="bg-gray-800 rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-700">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Gateway</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Gateway ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Fee</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Order</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {gateways.length === 0 ? (
+              <>
+                {/* Mobile Card View */}
+                <div className="lg:hidden space-y-4">
+                  {gateways.map((gateway) => (
+                    <div key={gateway.id} className="bg-gray-800 rounded-lg p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-1">
+                          {gateway.logo_url && (
+                            <img src={gateway.logo_url} alt={gateway.gateway_name} className="w-12 h-12 object-contain rounded" />
+                          )}
+                          <div className="flex-1">
+                            <div className="font-bold text-lg">{gateway.gateway_name}</div>
+                            {gateway.description && (
+                              <div className="text-sm text-gray-400 mt-1">{gateway.description}</div>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleToggleActive(gateway.id)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                            gateway.is_active ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'
+                          }`}
+                        >
+                          {gateway.is_active ? 'Active' : 'Inactive'}
+                        </button>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400">Gateway ID:</span>
+                          <code className="bg-gray-700 px-2 py-1 rounded text-xs">{gateway.gateway_id}</code>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400">Fee:</span>
+                          <span className="font-medium">
+                            {gateway.fee_value > 0 ? (
+                              gateway.fee_type === 'percentage' ? `${gateway.fee_value}%` : `$${gateway.fee_value}`
+                            ) : 'Free'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400">Sort Order:</span>
+                          <span className="font-medium">{gateway.sort_order}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2 border-t border-gray-700">
+                        <button
+                          onClick={() => handleEdit(gateway)}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                        >
+                          <i className="fas fa-edit mr-2"></i>Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(gateway.id)}
+                          className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                        >
+                          <i className="fas fa-trash mr-2"></i>Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden lg:block bg-gray-800 rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-700">
                       <tr>
-                        <td colSpan="6" className="px-6 py-8 text-center text-gray-400">
-                          No payment gateways found. Add your first gateway to get started.
-                        </td>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Gateway</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Gateway ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Fee</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Order</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                       </tr>
-                    ) : (
-                      gateways.map((gateway) => (
+                    </thead>
+                    <tbody className="divide-y divide-gray-700">
+                      {gateways.map((gateway) => (
                         <tr key={gateway.id} className="hover:bg-gray-750">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -401,11 +465,11 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
                             </button>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
 
           {isModalOpen && (
