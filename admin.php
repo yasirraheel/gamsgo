@@ -31,20 +31,20 @@
 
     // StatCard Component
     const StatCard = ({ title, value, icon, color, trend }) => (
-      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all">
+      <div className="bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-gray-700 hover:border-gray-600 transition-all">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-400 text-sm mb-1">{title}</p>
-            <h3 className="text-3xl font-bold">{value}</h3>
+          <div className="flex-1 min-w-0">
+            <p className="text-gray-400 text-xs sm:text-sm mb-1 truncate">{title}</p>
+            <h3 className="text-xl sm:text-3xl font-bold truncate">{value}</h3>
             {trend && (
-              <p className={`text-sm mt-2 ${trend.positive ? 'text-green-400' : 'text-red-400'}`}>
+              <p className={`text-xs sm:text-sm mt-1 sm:mt-2 ${trend.positive ? 'text-green-400' : 'text-red-400'}`}>
                 <i className={`fas fa-arrow-${trend.positive ? 'up' : 'down'} mr-1`}></i>
                 {trend.value}
               </p>
             )}
           </div>
-          <div className={`w-16 h-16 rounded-xl ${color} flex items-center justify-center`}>
-            <i className={`fas ${icon} text-2xl text-white`}></i>
+          <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl ${color} flex items-center justify-center flex-shrink-0 ml-3`}>
+            <i className={`fas ${icon} text-lg sm:text-2xl text-white`}></i>
           </div>
         </div>
       </div>
@@ -65,13 +65,13 @@
       return (
         <>
           {/* Header */}
-          <header className="h-16 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-6 flex-shrink-0">
-            <div>
-              <h1 className="text-xl font-bold">Dashboard Overview</h1>
-              <p className="text-sm text-gray-400">Welcome back, {currentUser?.email?.split('@')[0]}</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="index.php?stay" className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors">
+          <header className="bg-gray-800 border-b border-gray-700 px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg lg:text-xl font-bold truncate">Dashboard Overview</h1>
+                <p className="text-xs sm:text-sm text-gray-400 truncate">Welcome back, {currentUser?.email?.split('@')[0]}</p>
+              </div>
+              <a href="index.php?stay" className="inline-flex items-center justify-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm transition-colors w-full sm:w-auto">
                 <i className="fas fa-store mr-2"></i>
                 View Store
               </a>
@@ -79,7 +79,7 @@
           </header>
 
           {/* Dashboard Content */}
-          <div className="p-6 flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center h-64">
                 <i className="fas fa-spinner fa-spin text-4xl text-primary"></i>
@@ -87,7 +87,7 @@
             ) : (
               <>
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
                   <StatCard
                     title="Total Orders"
                     value={stats.totalOrders}
@@ -116,47 +116,75 @@
 
                 {/* Recent Orders */}
                 <div className="bg-gray-800 rounded-xl border border-gray-700">
-                  <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-                    <h2 className="text-xl font-bold">Recent Orders</h2>
+                  <div className="p-4 sm:p-6 border-b border-gray-700 flex items-center justify-between">
+                    <h2 className="text-lg sm:text-xl font-bold">Recent Orders</h2>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-700/50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Order ID</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Customer</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Total</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Date</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-700">
-                        {recentOrders.length === 0 ? (
-                          <tr>
-                            <td colSpan="5" className="px-6 py-8 text-center text-gray-400">
-                              No orders yet
-                            </td>
-                          </tr>
-                        ) : (
-                          recentOrders.map((order) => (
-                            <tr key={order.id} className="hover:bg-gray-750">
-                              <td className="px-6 py-4 font-medium">#{order.id}</td>
-                              <td className="px-6 py-4 text-sm text-gray-300">{order.user_email}</td>
-                              <td className="px-6 py-4 font-semibold text-primary">${parseFloat(order.total_amount).toFixed(2)}</td>
-                              <td className="px-6 py-4">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-400">
+                  
+                  {recentOrders.length === 0 ? (
+                    <div className="p-8 sm:p-12 text-center">
+                      <i className="fas fa-inbox text-4xl sm:text-6xl text-gray-700 mb-4"></i>
+                      <p className="text-gray-400">No orders yet</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Mobile Card View */}
+                      <div className="lg:hidden divide-y divide-gray-700">
+                        {recentOrders.map((order) => (
+                          <div key={order.id} className="p-4 hover:bg-gray-750 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <div className="font-bold text-white">#{order.id}</div>
+                                <div className="text-sm text-gray-400 mt-1">{order.user_email}</div>
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+                              <div className="font-bold text-primary text-lg">
+                                ${parseFloat(order.total_amount).toFixed(2)}
+                              </div>
+                              <div className="text-xs text-gray-400">
                                 {new Date(order.created_at).toLocaleDateString()}
-                              </td>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desktop Table View */}
+                      <div className="hidden lg:block overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-gray-700/50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Order ID</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Customer</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Total</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Status</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">Date</th>
                             </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                          </thead>
+                          <tbody className="divide-y divide-gray-700">
+                            {recentOrders.map((order) => (
+                              <tr key={order.id} className="hover:bg-gray-750">
+                                <td className="px-6 py-4 font-medium">#{order.id}</td>
+                                <td className="px-6 py-4 text-sm text-gray-300">{order.user_email}</td>
+                                <td className="px-6 py-4 font-semibold text-primary">${parseFloat(order.total_amount).toFixed(2)}</td>
+                                <td className="px-6 py-4">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-sm text-gray-400">
+                                  {new Date(order.created_at).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
                 </div>
               </>
             )}

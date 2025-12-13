@@ -865,17 +865,38 @@ $faviconUrl = $settings['favicon_url'] ?? '';
 
             {isAdmin && (
               <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="glass-panel p-4 rounded-xl border border-red-500/20 bg-red-500/5"><div className="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Inventory</div><div className="text-2xl font-bold text-white">{totalStock} <span className="text-sm font-normal text-gray-500">items</span></div></div>
-                  <div className="glass-panel p-4 rounded-xl border border-red-500/20 bg-red-500/5"><div className="text-gray-400 text-xs uppercase tracking-wider mb-1">Potential Revenue</div><div className="text-2xl font-bold text-white">${totalValue.toFixed(2)}</div></div>
-                  <div className="glass-panel p-4 rounded-xl border border-red-500/20 bg-red-500/5 cursor-pointer" onClick={storeId ? copyStoreLink : createCloudStore}>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="glass-panel p-3 sm:p-4 rounded-lg sm:rounded-xl border border-red-500/20 bg-red-500/5">
+                    <div className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Inventory</div>
+                    <div className="text-lg sm:text-2xl font-bold text-white">{totalStock} <span className="text-xs sm:text-sm font-normal text-gray-500">items</span></div>
+                  </div>
+                  <div className="glass-panel p-3 sm:p-4 rounded-lg sm:rounded-xl border border-red-500/20 bg-red-500/5">
+                    <div className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider mb-1">Revenue</div>
+                    <div className="text-lg sm:text-2xl font-bold text-white">${totalValue.toFixed(2)}</div>
+                  </div>
+                  <div className="glass-panel p-3 sm:p-4 rounded-lg sm:rounded-xl border border-red-500/20 bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors" onClick={storeId ? copyStoreLink : createCloudStore}>
                     {storeId ? (
-                      <div className="flex flex-col h-full justify-center gap-1 cursor-pointer"><div className="text-emerald-400 text-xs uppercase tracking-wider mb-1 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>Online Global</div><div className="text-sm font-bold text-white truncate underline decoration-dotted">Click to Copy Link</div></div>
+                      <div className="flex flex-col h-full justify-center gap-1">
+                        <div className="text-emerald-400 text-[10px] sm:text-xs uppercase tracking-wider mb-1 flex items-center gap-1 sm:gap-2">
+                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                          <span className="hidden sm:inline">Online Global</span>
+                          <span className="sm:hidden">Live</span>
+                        </div>
+                        <div className="text-xs sm:text-sm font-bold text-white truncate underline decoration-dotted">Copy Link</div>
+                      </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-blue-400 gap-1 cursor-pointer hover:text-blue-300"><i className="fa-solid fa-globe text-xl"></i><span className="font-bold text-sm">Go Live Globally</span></div>
+                      <div className="flex flex-col items-center justify-center h-full text-blue-400 gap-1 hover:text-blue-300">
+                        <i className="fa-solid fa-globe text-lg sm:text-xl"></i>
+                        <span className="font-bold text-xs sm:text-sm">Go Live</span>
+                      </div>
                     )}
                   </div>
-                  <div className="glass-panel p-4 rounded-xl border border-red-500/20 bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors" onClick={openAddModal}><div className="flex flex-col items-center justify-center h-full text-red-400 gap-2"><i className="fa-solid fa-circle-plus text-2xl"></i><span className="font-bold text-sm">Create Listing</span></div></div>
+                  <div className="glass-panel p-3 sm:p-4 rounded-lg sm:rounded-xl border border-red-500/20 bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors" onClick={openAddModal}>
+                    <div className="flex flex-col items-center justify-center h-full text-red-400 gap-1 sm:gap-2">
+                      <i className="fa-solid fa-circle-plus text-lg sm:text-2xl"></i>
+                      <span className="font-bold text-xs sm:text-sm">Add Item</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
